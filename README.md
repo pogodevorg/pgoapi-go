@@ -1,5 +1,6 @@
 # pogo
 Pokémon Go API tools written in Golang
+Source at: https://github.com/pkmngo-odi/pogo
 
 ## Library
 You can include this package as a library in your own project.
@@ -9,8 +10,8 @@ You can include this package as a library in your own project.
 ```go
 import (
   "fmt"
-  "github.com/zeeraw/pogo/api"
-  "github.com/zeeraw/pogo/auth"
+  "github.com/pkmngo-odi/pogo/api"
+  "github.com/pkmngo-odi/pogo/auth"
 )
 
 func main() {
@@ -58,7 +59,7 @@ func main() {
 Make sure you're running the latest version of Go, then simply install through `go get`.
 
 ```bash
-$ go get -u github.com/zeeraw/pogo
+$ go get -u github.com/pkmngo-odi/pogo
 ```
 
 ### Usage

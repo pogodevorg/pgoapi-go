@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/zeeraw/pogo/auth"
-	"github.com/zeeraw/pogo/rpc"
+	"github.com/pkmngo-odi/pogo/auth"
+	"github.com/pkmngo-odi/pogo/rpc"
 
-	ne "github.com/zeeraw/pogo-protos/networking_envelopes"
-	nr "github.com/zeeraw/pogo-protos/networking_requests"
-	nrm "github.com/zeeraw/pogo-protos/networking_requests_messages"
-	nrs "github.com/zeeraw/pogo-protos/networking_responses"
+	ne "github.com/pkmngo-odi/pogo-protos/networking_envelopes"
+	nr "github.com/pkmngo-odi/pogo-protos/networking_requests"
+	nrm "github.com/pkmngo-odi/pogo-protos/networking_requests_messages"
+	nrs "github.com/pkmngo-odi/pogo-protos/networking_responses"
 
 	"github.com/golang/protobuf/proto"
 )

@@ -9,7 +9,7 @@ import (
 
   "github.com/golang/protobuf/proto"
 
-  ne "github.com/zeeraw/pogo-protos/networking_envelopes"
+  ne "github.com/pkmngo-odi/pogo-protos/networking_envelopes"
 )
 
 const httpUserAgent = "Niantic App"
