@@ -12,6 +12,7 @@ func Run(args []string) {
 	app := cli.NewApp()
 	app.Name = "pogo"
 	app.Usage = "Command line client for the Pokémon Go API"
+	app.Author = "Philip Vieira <zee@vall.in>"
 	app.Version = "0.0.1"
 
 	app.Flags = []cli.Flag{
