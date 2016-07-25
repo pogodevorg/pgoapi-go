@@ -7,9 +7,13 @@ Source at: https://github.com/pkmngo-odi/pogo
 You can include this package as a library in your own project.
 
 ### Example
+This is an example program that will retrieve player data and print it as JSON.
 
 ```go
+package main
+
 import (
+  "encoding/json"
   "fmt"
   "github.com/pkmngo-odi/pogo/api"
   "github.com/pkmngo-odi/pogo/auth"
@@ -18,7 +22,7 @@ import (
 func main() {
 
   // Initialize a new authentication provider to retrieve an access token
-  provider, err := auth.NewProvider("ptc", "MyUser", "Pass1!!)")
+  provider, err := auth.NewProvider("ptc", "MyUser", "Pass1!!")
   if err != nil {
     fmt.Println(err)
     return
@@ -36,7 +40,7 @@ func main() {
   session.Init()
 
   // Start querying the API
-  player, err := client.GetPlayer()
+  player, err := session.GetPlayer()
   if err != nil {
     fmt.Println(err)
     return
@@ -49,8 +53,6 @@ func main() {
   }
 
   fmt.Println(string(out))
-  return nil
-
 }
 ```
 
