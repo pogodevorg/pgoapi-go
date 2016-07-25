@@ -7,12 +7,8 @@ import (
 	"github.com/pkmngo-odi/pogo/auth"
 	"github.com/pkmngo-odi/pogo/rpc"
 
-	ne "github.com/pkmngo-odi/pogo-protos/networking_envelopes"
-	nr "github.com/pkmngo-odi/pogo-protos/networking_requests"
-	nrm "github.com/pkmngo-odi/pogo-protos/networking_requests_messages"
-	nrs "github.com/pkmngo-odi/pogo-protos/networking_responses"
-
 	"github.com/golang/protobuf/proto"
+	"github.com/pkmngo-odi/pogo-protos"
 )
 
 const defaultURL = "https://pgorelease.nianticlabs.com/plfe/rpc"
@@ -26,8 +22,8 @@ type Session struct {
 	debug    bool
 }
 
-func generateRequests() []*nr.Request {
-	return make([]*nr.Request, 0)
+func generateRequests() []*protos.Request {
+	return make([]*protos.Request, 0)
 }
 
 // NewSession constructs a Pokémon Go RPC API client
@@ -55,17 +51,17 @@ func (s *Session) getURL() string {
 }
 
 // Call queries the Pokémon Go API through RPC protobuf
-func (s *Session) Call(requests []*nr.Request) (*ne.ResponseEnvelope, error) {
+func (s *Session) Call(requests []*protos.Request) (*protos.ResponseEnvelope, error) {
 
-	auth := &ne.RequestEnvelope_AuthInfo{
+	auth := &protos.RequestEnvelope_AuthInfo{
 		Provider: s.provider.GetProviderString(),
-		Token: &ne.RequestEnvelope_AuthInfo_JWT{
+		Token: &protos.RequestEnvelope_AuthInfo_JWT{
 			Contents: s.provider.GetAccessToken(),
 			Unknown2: int32(59),
 		},
 	}
 
-	requestEnvelope := &ne.RequestEnvelope{
+	requestEnvelope := &protos.RequestEnvelope{
 		RequestId:  uint64(8145806132888207460),
 		StatusCode: int32(2),
 		Unknown12:  int64(989),
@@ -99,29 +95,29 @@ func (s *Session) Init() error {
 		return err
 	}
 
-	var requests = make([]*nr.Request, 0)
-	requests = append(requests, &nr.Request{
-		RequestType: nr.RequestType_GET_PLAYER,
+	var requests = make([]*protos.Request, 0)
+	requests = append(requests, &protos.Request{
+		RequestType: protos.RequestType_GET_PLAYER,
 	})
 
-	requests = append(requests, &nr.Request{
-		RequestType: nr.RequestType_GET_HATCHED_EGGS,
+	requests = append(requests, &protos.Request{
+		RequestType: protos.RequestType_GET_HATCHED_EGGS,
 	})
 
-	requests = append(requests, &nr.Request{
-		RequestType: nr.RequestType_GET_INVENTORY,
+	requests = append(requests, &protos.Request{
+		RequestType: protos.RequestType_GET_INVENTORY,
 	})
 
-	requests = append(requests, &nr.Request{
-		RequestType: nr.RequestType_CHECK_AWARDED_BADGES,
+	requests = append(requests, &protos.Request{
+		RequestType: protos.RequestType_CHECK_AWARDED_BADGES,
 	})
 
-	settingsMessage, _ := proto.Marshal(&nrm.DownloadSettingsMessage{
+	settingsMessage, _ := proto.Marshal(&protos.DownloadSettingsMessage{
 		Hash: "05daf51635c82611d1aac95c0b051d3ec088a930",
 	})
 
-	requests = append(requests, &nr.Request{
-		RequestType:    nr.RequestType_DOWNLOAD_SETTINGS,
+	requests = append(requests, &protos.Request{
+		RequestType:    protos.RequestType_DOWNLOAD_SETTINGS,
 		RequestMessage: settingsMessage,
 	})
 
@@ -140,10 +136,10 @@ func (s *Session) Init() error {
 }
 
 // GetPlayer returns the current player profile
-func (s *Session) GetPlayer() (player *nrs.GetPlayerResponse, err error) {
+func (s *Session) GetPlayer() (player *protos.GetPlayerResponse, err error) {
 	requests := generateRequests()
-	requests = append(requests, &nr.Request{
-		RequestType: nr.RequestType_GET_PLAYER,
+	requests = append(requests, &protos.Request{
+		RequestType: protos.RequestType_GET_PLAYER,
 	})
 
 	response, err := s.Call(requests)
@@ -152,7 +148,7 @@ func (s *Session) GetPlayer() (player *nrs.GetPlayerResponse, err error) {
 		fmt.Println(response)
 	}
 
-	player = &nrs.GetPlayerResponse{}
+	player = &protos.GetPlayerResponse{}
 	proto.Unmarshal(response.Returns[0], player)
 
 	return player, nil

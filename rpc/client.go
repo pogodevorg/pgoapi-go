@@ -9,7 +9,7 @@ import (
 
   "github.com/golang/protobuf/proto"
 
-  ne "github.com/pkmngo-odi/pogo-protos/networking_envelopes"
+  "github.com/pkmngo-odi/pogo-protos"
 )
 
 const httpUserAgent = "Niantic App"
@@ -40,8 +40,8 @@ func NewClient() *Client {
 }
 
 // Request queries the Pokémon Go API will all pending requests
-func (c *Client) Request(endpoint string, requestEnvelope *ne.RequestEnvelope) (responseEnvelope *ne.ResponseEnvelope, err error) {
-  responseEnvelope = &ne.ResponseEnvelope{}
+func (c *Client) Request(endpoint string, requestEnvelope *protos.RequestEnvelope) (responseEnvelope *protos.ResponseEnvelope, err error) {
+  responseEnvelope = &protos.ResponseEnvelope{}
 
   // Build request
   requestBytes, err := proto.Marshal(requestEnvelope)
