@@ -4,6 +4,7 @@ import (
   "errors"
   "fmt"
   "github.com/pkmngo-odi/pogo/auth/ptc"
+  "github.com/AKosterin/pogo/auth/google"
 )
 
 // Provider is a common interface for managing auth tokens with the different third party authenticators
@@ -37,6 +38,8 @@ func NewProvider(provider, username, password string) (Provider, error) {
   switch provider {
   case "ptc":
     return ptc.NewProvider(username, password), nil
+  case "google":
+    return google.NewProvider(username, password), nil
   default:
     return &UnknownProvider{}, fmt.Errorf("Provider \"%s\" is not supported", provider)
   }
