@@ -3,7 +3,8 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"github.com/AKosterin/pogo/auth/google"
+
+	"github.com/pkmngo-odi/pogo/auth/google"
 	"github.com/pkmngo-odi/pogo/auth/ptc"
 )
 
