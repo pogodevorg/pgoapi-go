@@ -146,7 +146,6 @@ func (s *Session) GetPlayer() (player *protos.GetPlayerResponse, err error) {
 	response, err := s.Call(requests)
 	if err != nil {
 		return player, err
-		fmt.Println(response)
 	}
 
 	player = &protos.GetPlayerResponse{}
@@ -165,7 +164,6 @@ func (s *Session) GetInventory() (inventory *protos.GetInventoryResponse, err er
 	response, err := s.Call(requests)
 	if err != nil {
 		return inventory, err
-		fmt.Println(response)
 	}
 
 	inventory = &protos.GetInventoryResponse{}
