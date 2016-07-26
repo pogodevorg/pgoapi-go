@@ -154,7 +154,7 @@ func (s *Session) GetPlayer() (player *protos.GetPlayerResponse, err error) {
 	return player, nil
 }
 
-// GetPlayer returns the current player profile
+// GetInventory returns the player items
 func (s *Session) GetInventory() (inventory *protos.GetInventoryResponse, err error) {
 	requests := generateRequests()
 	requests = append(requests, &protos.Request{
