@@ -119,7 +119,7 @@ func (p *Provider) Login() (string, error) {
 	authorizeFormData := strings.NewReader(authorizeForm.Encode())
 
 	req3, _ := http.NewRequest("POST", authorizeURL, authorizeFormData)
-	req2.Header.Set("User-Agent", "niantic")
+	req3.Header.Set("User-Agent", "niantic")
 	req3.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	resp3, err3 := p.http.Do(req3)
