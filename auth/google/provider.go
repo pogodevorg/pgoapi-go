@@ -1,17 +1,17 @@
 package google
 
 import (
-	"io/ioutil"
-	"net/url"
-	"net/http"
-	"crypto/rsa"
-	"encoding/base64"
-	"crypto/sha1"
-	"math/big"
-	"crypto/rand"
-	"strings"
 	"compress/gzip"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha1"
+	"encoding/base64"
 	"fmt"
+	"io/ioutil"
+	"math/big"
+	"net/http"
+	"net/url"
+	"strings"
 )
 
 const androidKeyBase64 = "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3iJIZdodyhKZQrNWp5nKJ3srRXcUW+F1BD3baEVGcmEgqaLZUNBjm057pKRI16kB0YppeGx5qIQ5QjKzsR8ETQbKLNWgRY0QRNVz34kMJR3P/LgHax/6rmf5AAAAAwEAAQ=="
@@ -116,11 +116,11 @@ func signature(email, password string) (string, error) {
 	}
 
 	i := bytesToLong(androidKeyBytes[:4]).Int64()
-	j := bytesToLong(androidKeyBytes[i + 4 : i + 8]).Int64()
+	j := bytesToLong(androidKeyBytes[i+4 : i+8]).Int64()
 
 	androidKey := &rsa.PublicKey{
-		N: bytesToLong(androidKeyBytes[4 : 4 + i]),
-		E: int(bytesToLong(androidKeyBytes[i + 8 : i + 8 + j]).Int64()),
+		N: bytesToLong(androidKeyBytes[4 : 4+i]),
+		E: int(bytesToLong(androidKeyBytes[i+8 : i+8+j]).Int64()),
 	}
 
 	hash := sha1.Sum(androidKeyBytes)

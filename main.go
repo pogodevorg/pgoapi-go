@@ -1,11 +1,11 @@
 package main
 
 import (
-  "os"
+	"os"
 
-  "github.com/pkmngo-odi/pogo/cli"
+	"github.com/pkmngo-odi/pogo/cli"
 )
 
 func main() {
-  cli.Run(os.Args)
+	cli.Run(os.Args)
 }
