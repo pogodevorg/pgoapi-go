@@ -95,7 +95,7 @@ func (s *Session) Init() error {
 		return err
 	}
 
-	var requests = make([]*protos.Request, 0)
+	requests := generateRequests()
 	requests = append(requests, &protos.Request{
 		RequestType: protos.RequestType_GET_PLAYER,
 	})
