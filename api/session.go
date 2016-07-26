@@ -12,6 +12,7 @@ import (
 )
 
 const defaultURL = "https://pgorelease.nianticlabs.com/plfe/rpc"
+const downloadSettingsHash = "05daf51635c82611d1aac95c0b051d3ec088a930"
 
 // Session is used to communicate with the Pokémon Go API
 type Session struct {
@@ -113,7 +114,7 @@ func (s *Session) Init() error {
 	})
 
 	settingsMessage, _ := proto.Marshal(&protos.DownloadSettingsMessage{
-		Hash: "05daf51635c82611d1aac95c0b051d3ec088a930",
+		Hash: downloadSettingsHash,
 	})
 
 	requests = append(requests, &protos.Request{
