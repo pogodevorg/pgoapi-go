@@ -40,3 +40,21 @@ func getPlayer(context *cli.Context, client *api.Session, provider auth.Provider
 	fmt.Println(string(out))
 	return nil
 }
+
+func getInventory(context *cli.Context, client *api.Session, provider auth.Provider) error {
+	err := client.Init()
+	if err != nil {
+		return fail(err)
+	}
+	inventory, err := client.GetInventory()
+	if err != nil {
+		return fail(err)
+	}
+	out, err := json.Marshal(inventory)
+	if err != nil {
+		return fail(err)
+	}
+
+	fmt.Println(string(out))
+	return nil
+}

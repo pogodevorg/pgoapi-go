@@ -153,3 +153,22 @@ func (s *Session) GetPlayer() (player *protos.GetPlayerResponse, err error) {
 
 	return player, nil
 }
+
+// GetPlayer returns the current player profile
+func (s *Session) GetInventory() (inventory *protos.GetInventoryResponse, err error) {
+	requests := generateRequests()
+	requests = append(requests, &protos.Request{
+		RequestType: protos.RequestType_GET_INVENTORY,
+	})
+
+	response, err := s.Call(requests)
+	if err != nil {
+		return inventory, err
+		fmt.Println(response)
+	}
+
+	inventory = &protos.GetInventoryResponse{}
+	proto.Unmarshal(response.Returns[0], inventory)
+
+	return inventory, nil
+}

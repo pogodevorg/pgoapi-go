@@ -68,6 +68,11 @@ func Run(args []string) {
 			Usage:  "Retrieves the user's Pokémon Go player profile",
 			Action: w.wrap(getPlayer),
 		},
+		{
+			Name:   "inventory",
+			Usage:  "Retrieves the user's Pokémon Go player inventory",
+			Action: w.wrap(getInventory),
+		},
 	}
 
 	app.Run(args)
