@@ -14,7 +14,7 @@ func fail(e error) *cli.ExitError {
 	return cli.NewExitError(e.Error(), 1)
 }
 
-func getAccessToken(context *cli.Context, client *api.Session, provider auth.Provider) error {
+func getAccessToken(context *cli.Context, session *api.Session, provider auth.Provider) error {
 	token, err := provider.Login()
 	if err != nil {
 		return fail(err)
@@ -23,12 +23,12 @@ func getAccessToken(context *cli.Context, client *api.Session, provider auth.Pro
 	return nil
 }
 
-func getPlayer(context *cli.Context, client *api.Session, provider auth.Provider) error {
-	err := client.Init()
+func getPlayer(context *cli.Context, session *api.Session, provider auth.Provider) error {
+	err := session.Init()
 	if err != nil {
 		return fail(err)
 	}
-	profile, err := client.GetPlayer()
+	profile, err := session.GetPlayer()
 	if err != nil {
 		return fail(err)
 	}
@@ -41,12 +41,12 @@ func getPlayer(context *cli.Context, client *api.Session, provider auth.Provider
 	return nil
 }
 
-func getInventory(context *cli.Context, client *api.Session, provider auth.Provider) error {
-	err := client.Init()
+func getInventory(context *cli.Context, session *api.Session, provider auth.Provider) error {
+	err := session.Init()
 	if err != nil {
 		return fail(err)
 	}
-	inventory, err := client.GetInventory()
+	inventory, err := session.GetInventory()
 	if err != nil {
 		return fail(err)
 	}
