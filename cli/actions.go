@@ -58,3 +58,21 @@ func getInventory(context *cli.Context, session *api.Session, provider auth.Prov
 	fmt.Println(string(out))
 	return nil
 }
+
+func getMap(context *cli.Context, session *api.Session, provider auth.Provider) error {
+	err := session.Init()
+	if err != nil {
+		return fail(err)
+	}
+	mapObjects, err := session.Announce()
+	if err != nil {
+		return fail(err)
+	}
+	out, err := json.Marshal(mapObjects)
+	if err != nil {
+		return fail(err)
+	}
+
+	fmt.Println(string(out))
+	return nil
+}

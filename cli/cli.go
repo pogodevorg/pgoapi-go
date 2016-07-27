@@ -73,6 +73,11 @@ func Run(args []string) {
 			Usage:  "Retrieves the user's Pokémon Go player inventory",
 			Action: w.wrap(getInventory),
 		},
+		{
+			Name:   "map",
+			Usage:  "Retrieves map data for the player's current location",
+			Action: w.wrap(getMap),
+		},
 	}
 
 	app.Run(args)
