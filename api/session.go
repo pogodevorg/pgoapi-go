@@ -8,21 +8,12 @@ import (
 	"github.com/pkmngo-odi/pogo/auth"
 	"github.com/pkmngo-odi/pogo/rpc"
 
-	"github.com/golang/geo/s2"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkmngo-odi/pogo-protos"
 )
 
 const defaultURL = "https://pgorelease.nianticlabs.com/plfe/rpc"
 const downloadSettingsHash = "05daf51635c82611d1aac95c0b051d3ec088a930"
-const cellIDLevel = 15
-
-// Location consists of coordinates in longitude, latitude and altitude
-type Location struct {
-	Lon float64
-	Lat float64
-	Alt float64
-}
 
 // Session is used to communicate with the Pokémon Go API
 type Session struct {
@@ -36,16 +27,6 @@ type Session struct {
 
 func generateRequests() []*protos.Request {
 	return make([]*protos.Request, 0)
-}
-
-func getCellIDs(location *Location) []uint64 {
-	origin := s2.CellIDFromLatLng(s2.LatLngFromDegrees(location.Lat, location.Lon)).Parent(cellIDLevel)
-	var cellIDs = make([]uint64, 0)
-	cellIDs = append(cellIDs, uint64(origin))
-	for _, cellID := range origin.EdgeNeighbors() {
-		cellIDs = append(cellIDs, uint64(cellID))
-	}
-	return cellIDs
 }
 
 // NewSession constructs a Pokémon Go RPC API client
@@ -160,7 +141,7 @@ func (s *Session) Init() error {
 // Announce publishes the player's presence and returns the map environment
 func (s *Session) Announce() (mapObjects *protos.GetMapObjectsResponse, err error) {
 
-	cellIDs := getCellIDs(s.location)
+	cellIDs := s.location.GetCellIDs()
 	lastTimestamp := time.Now().Unix() * 1000
 
 	requests := generateRequests()
