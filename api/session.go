@@ -190,7 +190,7 @@ func (s *Session) GetPlayer() (*protos.GetPlayerResponse, error) {
 	proto.Unmarshal(response.Returns[0], player)
 	s.feed.Push(player)
 
-	return player, nil
+	return player, GetErrorFromStatus(response.StatusCode)
 }
 
 // GetPlayerMap returns the surrounding map cells
@@ -214,8 +214,9 @@ func (s *Session) GetPlayerMap() (*protos.GetMapObjectsResponse, error) {
 		return nil, err
 	}
 
-	mapcells := &protos.GetMapObjectsResponse{}
-	return mapcells, proto.Unmarshal(response.Returns[0], mapcells)
+	mapCells := &protos.GetMapObjectsResponse{}
+	proto.Unmarshal(response.Returns[0], mapCells)
+	return mapCells, GetErrorFromStatus(response.StatusCode)
 }
 
 // GetInventory returns the player items
@@ -228,5 +229,5 @@ func (s *Session) GetInventory() (*protos.GetInventoryResponse, error) {
 	inventory := &protos.GetInventoryResponse{}
 	proto.Unmarshal(response.Returns[0], inventory)
 	s.feed.Push(inventory)
-	return inventory, nil
+	return inventory, GetErrorFromStatus(response.StatusCode)
 }
