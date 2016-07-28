@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/pkmngo-odi/pogo/auth"
-	"github.com/pkmngo-odi/pogo/rpc"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/pkmngo-odi/pogo-protos"
@@ -18,11 +17,11 @@ const downloadSettingsHash = "05daf51635c82611d1aac95c0b051d3ec088a930"
 // Session is used to communicate with the Pokémon Go API
 type Session struct {
 	location *Location
-
+	rpc      *RPC
 	url      string
-	rpc      *rpc.Client
-	provider auth.Provider
 	debug    bool
+
+	provider auth.Provider
 }
 
 func generateRequests() []*protos.Request {
@@ -33,7 +32,7 @@ func generateRequests() []*protos.Request {
 func NewSession(provider auth.Provider, location *Location, debug bool) *Session {
 	return &Session{
 		location: location,
-		rpc:      rpc.NewClient(),
+		rpc:      NewRPC(),
 		provider: provider,
 		debug:    debug,
 	}

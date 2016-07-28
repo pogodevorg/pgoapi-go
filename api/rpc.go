@@ -1,4 +1,4 @@
-package rpc
+package api
 
 import (
 	"bytes"
@@ -12,19 +12,19 @@ import (
 	"github.com/pkmngo-odi/pogo-protos"
 )
 
-const httpUserAgent = "Niantic App"
+const rpcUserAgent = "Niantic App"
 
 func raise(message string) error {
 	return fmt.Errorf("rpc/client: %s", message)
 }
 
-// Client is used to communicate with the Pokémon Go API
-type Client struct {
+// RPC is used to communicate with the Pokémon Go API
+type RPC struct {
 	http *http.Client
 }
 
-// NewClient constructs a Pokémon Go RPC API client
-func NewClient() *Client {
+// NewRPC constructs a Pokémon Go RPC API client
+func NewRPC() *RPC {
 	options := &cookiejar.Options{}
 	jar, _ := cookiejar.New(options)
 	httpClient := &http.Client{
@@ -34,13 +34,13 @@ func NewClient() *Client {
 		},
 	}
 
-	return &Client{
+	return &RPC{
 		http: httpClient,
 	}
 }
 
 // Request queries the Pokémon Go API will all pending requests
-func (c *Client) Request(endpoint string, requestEnvelope *protos.RequestEnvelope) (responseEnvelope *protos.ResponseEnvelope, err error) {
+func (c *RPC) Request(endpoint string, requestEnvelope *protos.RequestEnvelope) (responseEnvelope *protos.ResponseEnvelope, err error) {
 	responseEnvelope = &protos.ResponseEnvelope{}
 
 	// Build request
@@ -53,7 +53,7 @@ func (c *Client) Request(endpoint string, requestEnvelope *protos.RequestEnvelop
 	if err != nil {
 		return responseEnvelope, raise("Unable to create the request")
 	}
-	request.Header.Add("User-Agent", httpUserAgent)
+	request.Header.Add("User-Agent", rpcUserAgent)
 
 	// Perform call to API
 	response, err := c.http.Do(request)
