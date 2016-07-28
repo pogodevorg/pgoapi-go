@@ -90,6 +90,11 @@ func (s *Session) Call(requests []*protos.Request) (*protos.ResponseEnvelope, er
 	return responseEnvelope, err
 }
 
+// MoveTo sets your current location
+func (s *Session) MoveTo(location *Location) {
+	s.location = location
+}
+
 // Init initializes the client by performing full authentication
 func (s *Session) Init() error {
 	_, err := s.provider.Login()
