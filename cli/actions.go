@@ -64,7 +64,7 @@ func getMap(context *cli.Context, session *api.Session, provider auth.Provider) 
 	if err != nil {
 		return fail(err)
 	}
-	mapObjects, err := session.Announce()
+	mapObjects, err := session.GetPlayerMap()
 	if err != nil {
 		return fail(err)
 	}
