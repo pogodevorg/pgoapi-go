@@ -138,8 +138,9 @@ func (s *Session) Announce() (mapObjects *protos.GetMapObjectsResponse, err erro
 	cellIDs := s.location.GetCellIDs()
 	lastTimestamp := time.Now().Unix() * 1000
 
-	requests := generateRequests()
-
+	settingsMessage, _ := proto.Marshal(&protos.DownloadSettingsMessage{
+		Hash: downloadSettingsHash,
+	})
 	// Request the map objects based on my current location and route cell ids
 	getMapObjectsMessage, _ := proto.Marshal(&protos.GetMapObjectsMessage{
 		// Traversed route since last supposed last heartbeat
@@ -152,38 +153,18 @@ func (s *Session) Announce() (mapObjects *protos.GetMapObjectsResponse, err erro
 		Longitude: s.location.Lon,
 		Latitude:  s.location.Lat,
 	})
-
-	requests = append(requests, &protos.Request{
-		RequestType:    protos.RequestType_GET_MAP_OBJECTS,
-		RequestMessage: getMapObjectsMessage,
-	})
-
-	requests = append(requests, &protos.Request{
-		RequestType: protos.RequestType_GET_HATCHED_EGGS,
-	})
-
 	// Request the inventory with a message containing the current time
 	getInventoryMessage, _ := proto.Marshal(&protos.GetInventoryMessage{
 		LastTimestampMs: lastTimestamp,
 	})
-
-	requests = append(requests, &protos.Request{
-		RequestType:    protos.RequestType_GET_INVENTORY,
-		RequestMessage: getInventoryMessage,
-	})
-
-	requests = append(requests, &protos.Request{
-		RequestType: protos.RequestType_CHECK_AWARDED_BADGES,
-	})
-
-	settingsMessage, _ := proto.Marshal(&protos.DownloadSettingsMessage{
-		Hash: downloadSettingsHash,
-	})
-
-	requests = append(requests, &protos.Request{
-		RequestType:    protos.RequestType_DOWNLOAD_SETTINGS,
-		RequestMessage: settingsMessage,
-	})
+	requests := []*protos.Request{
+		{RequestType: protos.RequestType_GET_PLAYER},
+		{RequestType: protos.RequestType_GET_HATCHED_EGGS},
+		{protos.RequestType_GET_INVENTORY, getInventoryMessage},
+		{RequestType: protos.RequestType_CHECK_AWARDED_BADGES},
+		{protos.RequestType_DOWNLOAD_SETTINGS, settingsMessage},
+		{protos.RequestType_GET_MAP_OBJECTS, getMapObjectsMessage},
+	}
 
 	response, err := s.Call(requests)
 	if err != nil {
@@ -214,7 +195,7 @@ func (s *Session) GetPlayer() (*protos.GetPlayerResponse, error) {
 
 // GetPlayerMap returns the surrounding map cells
 func (s *Session) GetPlayerMap() (*protos.GetMapObjectsResponse, error) {
-	cellIDS := CalculateCellIDs(s.location)
+	cellIDS := s.location.GetCellIDs()
 	mapObjRequest, err := proto.Marshal(&protos.GetMapObjectsMessage{
 		CellId:           cellIDS,
 		SinceTimestampMs: make([]int64, len(cellIDS)),
