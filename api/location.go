@@ -7,9 +7,11 @@ import (
 	protos "github.com/pkmngo-odi/pogo-protos"
 )
 
-type CellIDs []uint64
-
 const cellIDLevel = 15
+const earthRadiusInMeters = 6378100
+
+// CellIDs is a slice of uint64s
+type CellIDs []uint64
 
 func (a CellIDs) Len() int           { return len(a) }
 func (a CellIDs) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
@@ -35,9 +37,8 @@ func (l *Location) GetCellIDs() CellIDs {
 	return cellIDs
 }
 
-// Returns point -> fort distance
-// Haversine Formula
-// https://gist.github.com/cdipaolo/d3f8db3848278b49db68
+// DistanceToFort returns distance between the location and a fort using the Haversine formula
+// Reference: https://gist.github.com/cdipaolo/d3f8db3848278b49db68
 func (l *Location) DistanceToFort(fort *protos.FortData) float64 {
 	// convert to radians
 	// must cast radius as float to multiply later
@@ -47,12 +48,10 @@ func (l *Location) DistanceToFort(fort *protos.FortData) float64 {
 	la2 = fort.Latitude * math.Pi / 180
 	lo2 = fort.Longitude * math.Pi / 180
 
-	r = 6378100 // Earth radius in METERS
-
 	// calculate
 	dla := math.Sin(0.5 * (la2 - la1))
 	dlo := math.Sin(0.5 * (lo2 - lo1))
 	h := dla*dla + math.Cos(la1)*math.Cos(la2)*dlo*dlo
 
-	return 2 * r * math.Asin(math.Sqrt(h))
+	return 2 * earthRadiusInMeters * math.Asin(math.Sqrt(h))
 }
