@@ -42,7 +42,7 @@ func (l *Location) GetCellIDs() CellIDs {
 func (l *Location) DistanceToFort(fort *protos.FortData) float64 {
 	// convert to radians
 	// must cast radius as float to multiply later
-	var la1, lo1, la2, lo2, r float64
+	var la1, lo1, la2, lo2 float64
 	la1 = l.Lat * math.Pi / 180
 	lo1 = l.Lon * math.Pi / 180
 	la2 = fort.Latitude * math.Pi / 180
