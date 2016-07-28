@@ -17,6 +17,7 @@ const downloadSettingsHash = "05daf51635c82611d1aac95c0b051d3ec088a930"
 // Session is used to communicate with the Pokémon Go API
 type Session struct {
 	location *Location
+	feed     *Feed
 	rpc      *RPC
 	url      string
 	debug    bool
@@ -29,12 +30,13 @@ func generateRequests() []*protos.Request {
 }
 
 // NewSession constructs a Pokémon Go RPC API client
-func NewSession(provider auth.Provider, location *Location, debug bool) *Session {
+func NewSession(provider auth.Provider, location *Location, feed *Feed, debug bool) *Session {
 	return &Session{
 		location: location,
 		rpc:      NewRPC(),
 		provider: provider,
 		debug:    debug,
+		feed:     feed,
 	}
 }
 
@@ -202,6 +204,8 @@ func (s *Session) Announce() (mapObjects *protos.GetMapObjectsResponse, err erro
 
 	mapObjects = &protos.GetMapObjectsResponse{}
 	proto.Unmarshal(response.Returns[0], mapObjects)
+	s.feed.Push(mapObjects)
+
 	return mapObjects, GetErrorFromStatus(response.StatusCode)
 }
 
@@ -219,6 +223,7 @@ func (s *Session) GetPlayer() (player *protos.GetPlayerResponse, err error) {
 
 	player = &protos.GetPlayerResponse{}
 	proto.Unmarshal(response.Returns[0], player)
+	s.feed.Push(player)
 
 	return player, nil
 }
@@ -237,6 +242,7 @@ func (s *Session) GetInventory() (inventory *protos.GetInventoryResponse, err er
 
 	inventory = &protos.GetInventoryResponse{}
 	proto.Unmarshal(response.Returns[0], inventory)
+	s.feed.Push(inventory)
 
 	return inventory, nil
 }
