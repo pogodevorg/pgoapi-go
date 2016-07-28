@@ -7,6 +7,7 @@ import (
 
 	"github.com/pkmngo-odi/pogo/auth"
 
+	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkmngo-odi/pogo-protos"
 )
@@ -21,6 +22,7 @@ type Session struct {
 	rpc      *RPC
 	url      string
 	debug    bool
+	debugger *jsonpb.Marshaler
 
 	provider auth.Provider
 }
@@ -36,6 +38,7 @@ func NewSession(provider auth.Provider, location *Location, feed *Feed, debug bo
 		rpc:      NewRPC(),
 		provider: provider,
 		debug:    debug,
+		debugger: &jsonpb.Marshaler{Indent: "\t"},
 		feed:     feed,
 	}
 }
@@ -80,13 +83,13 @@ func (s *Session) Call(requests []*protos.Request) (*protos.ResponseEnvelope, er
 	}
 
 	if s.debug {
-		log.Println(proto.MarshalTextString(requestEnvelope))
+		log.Println(s.debugger.MarshalToString(requestEnvelope))
 	}
 
 	responseEnvelope, err := s.rpc.Request(s.getURL(), requestEnvelope)
 
 	if s.debug {
-		log.Println(proto.MarshalTextString(responseEnvelope))
+		log.Println(s.debugger.MarshalToString(responseEnvelope))
 	}
 
 	return responseEnvelope, err
@@ -104,31 +107,16 @@ func (s *Session) Init() error {
 		return err
 	}
 
-	requests := generateRequests()
-	requests = append(requests, &protos.Request{
-		RequestType: protos.RequestType_GET_PLAYER,
-	})
-
-	requests = append(requests, &protos.Request{
-		RequestType: protos.RequestType_GET_HATCHED_EGGS,
-	})
-
-	requests = append(requests, &protos.Request{
-		RequestType: protos.RequestType_GET_INVENTORY,
-	})
-
-	requests = append(requests, &protos.Request{
-		RequestType: protos.RequestType_CHECK_AWARDED_BADGES,
-	})
-
 	settingsMessage, _ := proto.Marshal(&protos.DownloadSettingsMessage{
 		Hash: downloadSettingsHash,
 	})
-
-	requests = append(requests, &protos.Request{
-		RequestType:    protos.RequestType_DOWNLOAD_SETTINGS,
-		RequestMessage: settingsMessage,
-	})
+	requests := []*protos.Request{
+		{RequestType: protos.RequestType_GET_PLAYER},
+		{RequestType: protos.RequestType_GET_HATCHED_EGGS},
+		{RequestType: protos.RequestType_GET_INVENTORY},
+		{RequestType: protos.RequestType_CHECK_AWARDED_BADGES},
+		{protos.RequestType_DOWNLOAD_SETTINGS, settingsMessage},
+	}
 
 	response, err := s.Call(requests)
 	if err != nil {
@@ -150,8 +138,9 @@ func (s *Session) Announce() (mapObjects *protos.GetMapObjectsResponse, err erro
 	cellIDs := s.location.GetCellIDs()
 	lastTimestamp := time.Now().Unix() * 1000
 
-	requests := generateRequests()
-
+	settingsMessage, _ := proto.Marshal(&protos.DownloadSettingsMessage{
+		Hash: downloadSettingsHash,
+	})
 	// Request the map objects based on my current location and route cell ids
 	getMapObjectsMessage, _ := proto.Marshal(&protos.GetMapObjectsMessage{
 		// Traversed route since last supposed last heartbeat
@@ -164,38 +153,18 @@ func (s *Session) Announce() (mapObjects *protos.GetMapObjectsResponse, err erro
 		Longitude: s.location.Lon,
 		Latitude:  s.location.Lat,
 	})
-
-	requests = append(requests, &protos.Request{
-		RequestType:    protos.RequestType_GET_MAP_OBJECTS,
-		RequestMessage: getMapObjectsMessage,
-	})
-
-	requests = append(requests, &protos.Request{
-		RequestType: protos.RequestType_GET_HATCHED_EGGS,
-	})
-
 	// Request the inventory with a message containing the current time
 	getInventoryMessage, _ := proto.Marshal(&protos.GetInventoryMessage{
 		LastTimestampMs: lastTimestamp,
 	})
-
-	requests = append(requests, &protos.Request{
-		RequestType:    protos.RequestType_GET_INVENTORY,
-		RequestMessage: getInventoryMessage,
-	})
-
-	requests = append(requests, &protos.Request{
-		RequestType: protos.RequestType_CHECK_AWARDED_BADGES,
-	})
-
-	settingsMessage, _ := proto.Marshal(&protos.DownloadSettingsMessage{
-		Hash: downloadSettingsHash,
-	})
-
-	requests = append(requests, &protos.Request{
-		RequestType:    protos.RequestType_DOWNLOAD_SETTINGS,
-		RequestMessage: settingsMessage,
-	})
+	requests := []*protos.Request{
+		{RequestType: protos.RequestType_GET_PLAYER},
+		{RequestType: protos.RequestType_GET_HATCHED_EGGS},
+		{protos.RequestType_GET_INVENTORY, getInventoryMessage},
+		{RequestType: protos.RequestType_CHECK_AWARDED_BADGES},
+		{protos.RequestType_DOWNLOAD_SETTINGS, settingsMessage},
+		{protos.RequestType_GET_MAP_OBJECTS, getMapObjectsMessage},
+	}
 
 	response, err := s.Call(requests)
 	if err != nil {
@@ -210,39 +179,54 @@ func (s *Session) Announce() (mapObjects *protos.GetMapObjectsResponse, err erro
 }
 
 // GetPlayer returns the current player profile
-func (s *Session) GetPlayer() (player *protos.GetPlayerResponse, err error) {
-	requests := generateRequests()
-	requests = append(requests, &protos.Request{
-		RequestType: protos.RequestType_GET_PLAYER,
-	})
-
+func (s *Session) GetPlayer() (*protos.GetPlayerResponse, error) {
+	requests := []*protos.Request{{RequestType: protos.RequestType_GET_PLAYER}}
 	response, err := s.Call(requests)
 	if err != nil {
-		return player, err
+		return nil, err
 	}
 
-	player = &protos.GetPlayerResponse{}
+	player := &protos.GetPlayerResponse{}
 	proto.Unmarshal(response.Returns[0], player)
 	s.feed.Push(player)
 
 	return player, nil
 }
 
-// GetInventory returns the player items
-func (s *Session) GetInventory() (inventory *protos.GetInventoryResponse, err error) {
-	requests := generateRequests()
-	requests = append(requests, &protos.Request{
-		RequestType: protos.RequestType_GET_INVENTORY,
+// GetPlayerMap returns the surrounding map cells
+func (s *Session) GetPlayerMap() (*protos.GetMapObjectsResponse, error) {
+	cellIDS := s.location.GetCellIDs()
+	mapObjRequest, err := proto.Marshal(&protos.GetMapObjectsMessage{
+		CellId:           cellIDS,
+		SinceTimestampMs: make([]int64, len(cellIDS)),
+		Latitude:         s.location.Lat,
+		Longitude:        s.location.Lon,
 	})
+	if err != nil {
+		return nil, err
+	}
+	requests := []*protos.Request{
+		{RequestType: protos.RequestType_GET_MAP_OBJECTS, RequestMessage: mapObjRequest},
+	}
 
 	response, err := s.Call(requests)
 	if err != nil {
-		return inventory, err
+		return nil, err
 	}
 
-	inventory = &protos.GetInventoryResponse{}
+	mapcells := &protos.GetMapObjectsResponse{}
+	return mapcells, proto.Unmarshal(response.Returns[0], mapcells)
+}
+
+// GetInventory returns the player items
+func (s *Session) GetInventory() (*protos.GetInventoryResponse, error) {
+	requests := []*protos.Request{{RequestType: protos.RequestType_GET_INVENTORY}}
+	response, err := s.Call(requests)
+	if err != nil {
+		return nil, err
+	}
+	inventory := &protos.GetInventoryResponse{}
 	proto.Unmarshal(response.Returns[0], inventory)
 	s.feed.Push(inventory)
-
 	return inventory, nil
 }

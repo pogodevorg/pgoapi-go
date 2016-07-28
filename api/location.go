@@ -1,8 +1,19 @@
 package api
 
-import "github.com/golang/geo/s2"
+import (
+	"math"
+
+	"github.com/golang/geo/s2"
+	protos "github.com/pkmngo-odi/pogo-protos"
+)
+
+type CellIDs []uint64
 
 const cellIDLevel = 15
+
+func (a CellIDs) Len() int           { return len(a) }
+func (a CellIDs) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a CellIDs) Less(i, j int) bool { return a[i] < a[j] }
 
 // Location consists of coordinates in longitude, latitude and altitude
 type Location struct {
@@ -12,7 +23,7 @@ type Location struct {
 }
 
 // GetCellIDs will return a slice of the closed neighbourhood cell ids for the current coordinates
-func (l *Location) GetCellIDs() []uint64 {
+func (l *Location) GetCellIDs() CellIDs {
 	origin := s2.CellIDFromLatLng(s2.LatLngFromDegrees(l.Lat, l.Lon)).Parent(cellIDLevel)
 
 	var cellIDs = make([]uint64, 0)
@@ -22,4 +33,26 @@ func (l *Location) GetCellIDs() []uint64 {
 	}
 
 	return cellIDs
+}
+
+// Returns point -> fort distance
+// Haversine Formula
+// https://gist.github.com/cdipaolo/d3f8db3848278b49db68
+func (l *Location) DistanceToFort(fort *protos.FortData) float64 {
+	// convert to radians
+	// must cast radius as float to multiply later
+	var la1, lo1, la2, lo2, r float64
+	la1 = l.Lat * math.Pi / 180
+	lo1 = l.Lon * math.Pi / 180
+	la2 = fort.Latitude * math.Pi / 180
+	lo2 = fort.Longitude * math.Pi / 180
+
+	r = 6378100 // Earth radius in METERS
+
+	// calculate
+	dla := math.Sin(0.5 * (la2 - la1))
+	dlo := math.Sin(0.5 * (lo2 - lo1))
+	h := dla*dla + math.Cos(la1)*math.Cos(la2)*dlo*dlo
+
+	return 2 * r * math.Asin(math.Sqrt(h))
 }
