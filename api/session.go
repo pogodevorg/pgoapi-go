@@ -43,6 +43,10 @@ func NewSession(provider auth.Provider, location *Location, feed *Feed, debug bo
 	}
 }
 
+func (s *Session) SetTimeout(d time.Duration) {
+	s.rpc.http.Timeout = d
+}
+
 func (s *Session) setURL(urlToken string) {
 	s.url = fmt.Sprintf("https://%s/rpc", urlToken)
 }
