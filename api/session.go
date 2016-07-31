@@ -17,8 +17,8 @@ const downloadSettingsHash = "05daf51635c82611d1aac95c0b051d3ec088a930"
 
 // Session is used to communicate with the Pokémon Go API
 type Session struct {
+	feed     Feed
 	location *Location
-	feed     *Feed
 	rpc      *RPC
 	url      string
 	debug    bool
@@ -32,7 +32,7 @@ func generateRequests() []*protos.Request {
 }
 
 // NewSession constructs a Pokémon Go RPC API client
-func NewSession(provider auth.Provider, location *Location, feed *Feed, debug bool) *Session {
+func NewSession(provider auth.Provider, location *Location, feed Feed, debug bool) *Session {
 	return &Session{
 		location: location,
 		rpc:      NewRPC(),

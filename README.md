@@ -35,8 +35,12 @@ func main() {
     Alt: 0.0,
   }
 
+  // Set up a feed to where all the responses will be pushed
+  // The void feed will do nothing with the response entries
+  feed := &api.VoidFeed{}
+
   // Start new session and connect
-  session := api.NewSession(provider, location, false)
+  session := api.NewSession(provider, location, feed, false)
   session.Init()
 
   // Start querying the API
@@ -53,6 +57,33 @@ func main() {
   }
 
   fmt.Println(string(out))
+}
+```
+
+### Using the feed
+The feed is a common interface to get a stream of all responses.
+This debug feed will print all wild pokemon and forts from map responses to standard out.
+
+```go
+type DebugFeed struct {}
+
+func (f *DebugFeed) Push(entry interface{}) {
+  switch e := entry.(type) {
+  default:
+    // NOOP: Will not report type
+  case *protos.GetMapObjectsResponse:
+    cells := e.GetMapCells()
+    for _, cell := range cells {
+      pokemons := cell.GetWildPokemons()
+      if len(pokemons) > 0 {
+        fmt.Println(pokemons)
+      }
+      forts := cell.GetForts()
+      if len(forts) > 0 {
+        fmt.Println(forts)
+      }
+    }
+  }
 }
 ```
 

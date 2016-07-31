@@ -1,59 +1,16 @@
 package api
 
-import (
-	"github.com/pkmngo-odi/pogo-protos"
-)
-
-const feedBufferSize = 256
-
-// Feed is an intermediary that holds a buffer of encountered game items and a reporter to notify about them
-type Feed struct {
-	repoter Reporter
-	buffer  chan interface{}
+// Feed is a common interface to act on encountered
+type Feed interface {
+	// Push is used to put response messages on to the feed
+	Push(entry interface{})
 }
 
-// NewFeed construct a new Feed
-func NewFeed(r Reporter) *Feed {
-	return &Feed{
-		buffer:  make(chan interface{}, feedBufferSize),
-		repoter: r,
-	}
+// VoidFeed is a feed that does nothing with the data
+type VoidFeed struct {
 }
 
-// Push is used to get an entry on to the feed buffer
-func (f *Feed) Push(entry interface{}) {
-	select {
-	default:
-		return
-	case f.buffer <- entry:
-		return
-	}
-}
-
-// Report is a blocking operation that starts retrieving data from the feed buffer
-func (f *Feed) Report() {
-	for {
-		select {
-		default:
-			// NOOP: No entries in the buffer
-		case entry := <-f.buffer:
-			switch e := entry.(type) {
-			default:
-				// NOOP: Cannot report type
-			case *protos.GetMapObjectsResponse:
-				cells := e.GetMapCells()
-				for _, cell := range cells {
-					pokemons := cell.GetWildPokemons()
-					if len(pokemons) > 0 {
-						f.repoter.WildPokemons(pokemons)
-					}
-					forts := cell.GetForts()
-					if len(forts) > 0 {
-						f.repoter.Forts(forts)
-					}
-				}
-				// Report Forts & Pokemons
-			}
-		}
-	}
+// Push pushes the entry in to nothing
+func (f *VoidFeed) Push(entry interface{}) {
+	// NOOP
 }

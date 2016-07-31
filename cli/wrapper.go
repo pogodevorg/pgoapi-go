@@ -33,9 +33,7 @@ func (w *wrapper) wrap(action func(*cli.Context, *api.Session, auth.Provider) er
 			Alt: w.alt,
 		}
 
-		feed := api.NewFeed(&api.VoidReporter{})
-
-		client := api.NewSession(provider, location, feed, w.debug)
+		client := api.NewSession(provider, location, &api.VoidFeed{}, w.debug)
 
 		return action(context, client, provider)
 	}
