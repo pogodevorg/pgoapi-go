@@ -43,6 +43,7 @@ func NewSession(provider auth.Provider, location *Location, feed *Feed, debug bo
 	}
 }
 
+// SetTimeout sets the client timeout for the RPC API
 func (s *Session) SetTimeout(d time.Duration) {
 	s.rpc.http.Timeout = d
 }
