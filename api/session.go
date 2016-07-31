@@ -220,6 +220,7 @@ func (s *Session) GetPlayerMap() (*protos.GetMapObjectsResponse, error) {
 
 	mapCells := &protos.GetMapObjectsResponse{}
 	proto.Unmarshal(response.Returns[0], mapCells)
+	s.feed.Push(mapCells)
 	return mapCells, GetErrorFromStatus(response.StatusCode)
 }
 
