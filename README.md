@@ -15,11 +15,18 @@ package main
 import (
   "encoding/json"
   "fmt"
+
+  "golang.org/x/net/context"
+
   "github.com/pkmngo-odi/pogo/api"
   "github.com/pkmngo-odi/pogo/auth"
 )
 
 func main() {
+
+  // Unless you already have another net/context complient context, use this empty context.
+  // Read more about context at: https://godoc.org/golang.org/x/net/context
+  ctx := context.Background()
 
   // Initialize a new authentication provider to retrieve an access token
   provider, err := auth.NewProvider("ptc", "MyUser", "Pass1!!")
@@ -41,10 +48,14 @@ func main() {
 
   // Start new session and connect
   session := api.NewSession(provider, location, feed, false)
-  session.Init()
+  err = session.Init(ctx)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
 
   // Start querying the API
-  player, err := session.GetPlayer()
+  player, err := session.GetPlayer(ctx)
   if err != nil {
     fmt.Println(err)
     return
