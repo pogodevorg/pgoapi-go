@@ -1,5 +1,9 @@
 package api
 
+import (
+	"fmt"
+)
+
 const (
 	successfulStatus            int32 = 1
 	requiresAuthorizationStatus int32 = 2
@@ -49,4 +53,13 @@ type InvalidSessionError struct{}
 
 func (e *InvalidSessionError) Error() string {
 	return "The session token is invalid"
+}
+
+// ResponseError happens when there's something wrong with the response object
+type ResponseError struct {
+	err error
+}
+
+func (e *ResponseError) Error() string {
+	return fmt.Sprintf("The response could not be read: %s", e.err.Error())
 }

@@ -177,7 +177,10 @@ func (s *Session) Announce() (mapObjects *protos.GetMapObjectsResponse, err erro
 	}
 
 	mapObjects = &protos.GetMapObjectsResponse{}
-	proto.Unmarshal(response.Returns[0], mapObjects)
+	err = proto.Unmarshal(response.Returns[0], mapObjects)
+	if err != nil {
+		return nil, &ResponseError{err}
+	}
 	s.feed.Push(mapObjects)
 
 	return mapObjects, GetErrorFromStatus(response.StatusCode)
@@ -192,7 +195,10 @@ func (s *Session) GetPlayer() (*protos.GetPlayerResponse, error) {
 	}
 
 	player := &protos.GetPlayerResponse{}
-	proto.Unmarshal(response.Returns[0], player)
+	err = proto.Unmarshal(response.Returns[0], player)
+	if err != nil {
+		return nil, &ResponseError{err}
+	}
 	s.feed.Push(player)
 
 	return player, GetErrorFromStatus(response.StatusCode)
@@ -220,7 +226,11 @@ func (s *Session) GetPlayerMap() (*protos.GetMapObjectsResponse, error) {
 	}
 
 	mapCells := &protos.GetMapObjectsResponse{}
-	proto.Unmarshal(response.Returns[0], mapCells)
+	mapCellBytes := response.Returns[0]
+	err = proto.Unmarshal(mapCellBytes, mapCells)
+	if err != nil {
+		return nil, &ResponseError{err}
+	}
 	s.feed.Push(mapCells)
 	return mapCells, GetErrorFromStatus(response.StatusCode)
 }
@@ -233,7 +243,10 @@ func (s *Session) GetInventory() (*protos.GetInventoryResponse, error) {
 		return nil, err
 	}
 	inventory := &protos.GetInventoryResponse{}
-	proto.Unmarshal(response.Returns[0], inventory)
+	err = proto.Unmarshal(response.Returns[0], inventory)
+	if err != nil {
+		return nil, &ResponseError{err}
+	}
 	s.feed.Push(inventory)
 	return inventory, GetErrorFromStatus(response.StatusCode)
 }
