@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"golang.org/x/net/context"
+
 	"github.com/urfave/cli"
 
 	"github.com/pkmngo-odi/pogo/api"
@@ -14,8 +16,8 @@ func fail(e error) *cli.ExitError {
 	return cli.NewExitError(e.Error(), 1)
 }
 
-func getAccessToken(context *cli.Context, session *api.Session, provider auth.Provider) error {
-	token, err := provider.Login()
+func getAccessToken(ctx context.Context, session *api.Session, provider auth.Provider) error {
+	token, err := provider.Login(ctx)
 	if err != nil {
 		return fail(err)
 	}
@@ -23,12 +25,12 @@ func getAccessToken(context *cli.Context, session *api.Session, provider auth.Pr
 	return nil
 }
 
-func getPlayer(context *cli.Context, session *api.Session, provider auth.Provider) error {
-	err := session.Init()
+func getPlayer(ctx context.Context, session *api.Session, provider auth.Provider) error {
+	err := session.Init(ctx)
 	if err != nil {
 		return fail(err)
 	}
-	profile, err := session.GetPlayer()
+	profile, err := session.GetPlayer(ctx)
 	if err != nil {
 		return fail(err)
 	}
@@ -41,12 +43,12 @@ func getPlayer(context *cli.Context, session *api.Session, provider auth.Provide
 	return nil
 }
 
-func getInventory(context *cli.Context, session *api.Session, provider auth.Provider) error {
-	err := session.Init()
+func getInventory(ctx context.Context, session *api.Session, provider auth.Provider) error {
+	err := session.Init(ctx)
 	if err != nil {
 		return fail(err)
 	}
-	inventory, err := session.GetInventory()
+	inventory, err := session.GetInventory(ctx)
 	if err != nil {
 		return fail(err)
 	}
@@ -59,12 +61,12 @@ func getInventory(context *cli.Context, session *api.Session, provider auth.Prov
 	return nil
 }
 
-func getMap(context *cli.Context, session *api.Session, provider auth.Provider) error {
-	err := session.Init()
+func getMap(ctx context.Context, session *api.Session, provider auth.Provider) error {
+	err := session.Init(ctx)
 	if err != nil {
 		return fail(err)
 	}
-	mapObjects, err := session.GetPlayerMap()
+	mapObjects, err := session.GetPlayerMap(ctx)
 	if err != nil {
 		return fail(err)
 	}

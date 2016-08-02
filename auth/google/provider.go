@@ -12,6 +12,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"golang.org/x/net/context"
 )
 
 const androidKeyBase64 = "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3iJIZdodyhKZQrNWp5nKJ3srRXcUW+F1BD3baEVGcmEgqaLZUNBjm057pKRI16kB0YppeGx5qIQ5QjKzsR8ETQbKLNWgRY0QRNVz34kMJR3P/LgHax/6rmf5AAAAAwEAAQ=="
@@ -51,7 +53,7 @@ func (p *Provider) GetAccessToken() string {
 }
 
 // Login retrieves an access token from the Pokémon Trainer's Club
-func (p *Provider) Login() (string, error) {
+func (p *Provider) Login(ctx context.Context) (string, error) {
 	sig, err := signature(p.username, p.password)
 	if err != nil {
 		return "", err

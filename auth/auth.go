@@ -4,13 +4,15 @@ import (
 	"errors"
 	"fmt"
 
+	"golang.org/x/net/context"
+
 	"github.com/pkmngo-odi/pogo/auth/google"
 	"github.com/pkmngo-odi/pogo/auth/ptc"
 )
 
 // Provider is a common interface for managing auth tokens with the different third party authenticators
 type Provider interface {
-	Login() (authToken string, err error)
+	Login(context.Context) (authToken string, err error)
 	GetProviderString() string
 	GetAccessToken() string
 }
@@ -20,7 +22,7 @@ type UnknownProvider struct {
 }
 
 // Login tries to log in
-func (u *UnknownProvider) Login() (string, error) {
+func (u *UnknownProvider) Login(ctx context.Context) (string, error) {
 	return "", errors.New("Cannot log in using unknown provider")
 }
 

@@ -8,6 +8,8 @@ import (
 	"net/http/cookiejar"
 
 	"github.com/golang/protobuf/proto"
+	"golang.org/x/net/context"
+	"golang.org/x/net/context/ctxhttp"
 
 	"github.com/pkmngo-odi/pogo-protos"
 )
@@ -40,7 +42,7 @@ func NewRPC() *RPC {
 }
 
 // Request queries the Pokémon Go API will all pending requests
-func (c *RPC) Request(endpoint string, requestEnvelope *protos.RequestEnvelope) (responseEnvelope *protos.ResponseEnvelope, err error) {
+func (c *RPC) Request(ctx context.Context, endpoint string, requestEnvelope *protos.RequestEnvelope) (responseEnvelope *protos.ResponseEnvelope, err error) {
 	responseEnvelope = &protos.ResponseEnvelope{}
 
 	// Build request
@@ -56,7 +58,7 @@ func (c *RPC) Request(endpoint string, requestEnvelope *protos.RequestEnvelope) 
 	request.Header.Add("User-Agent", rpcUserAgent)
 
 	// Perform call to API
-	response, err := c.http.Do(request)
+	response, err := ctxhttp.Do(ctx, c.http, request)
 	if err != nil {
 		return responseEnvelope, raise(fmt.Sprintf("There was an error requesting the API: %s", err))
 	}

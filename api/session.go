@@ -5,11 +5,12 @@ import (
 	"log"
 	"time"
 
-	"github.com/pkmngo-odi/pogo/auth"
-
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkmngo-odi/pogo-protos"
+	"golang.org/x/net/context"
+
+	"github.com/pkmngo-odi/pogo/auth"
 )
 
 const defaultURL = "https://pgorelease.nianticlabs.com/plfe/rpc"
@@ -63,7 +64,7 @@ func (s *Session) getURL() string {
 }
 
 // Call queries the Pokémon Go API through RPC protobuf
-func (s *Session) Call(requests []*protos.Request) (*protos.ResponseEnvelope, error) {
+func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos.ResponseEnvelope, error) {
 
 	auth := &protos.RequestEnvelope_AuthInfo{
 		Provider: s.provider.GetProviderString(),
@@ -91,7 +92,7 @@ func (s *Session) Call(requests []*protos.Request) (*protos.ResponseEnvelope, er
 		log.Println(s.debugger.MarshalToString(requestEnvelope))
 	}
 
-	responseEnvelope, err := s.rpc.Request(s.getURL(), requestEnvelope)
+	responseEnvelope, err := s.rpc.Request(ctx, s.getURL(), requestEnvelope)
 
 	if s.debug {
 		log.Println(s.debugger.MarshalToString(responseEnvelope))
@@ -106,8 +107,8 @@ func (s *Session) MoveTo(location *Location) {
 }
 
 // Init initializes the client by performing full authentication
-func (s *Session) Init() error {
-	_, err := s.provider.Login()
+func (s *Session) Init(ctx context.Context) error {
+	_, err := s.provider.Login(ctx)
 	if err != nil {
 		return err
 	}
@@ -123,7 +124,7 @@ func (s *Session) Init() error {
 		{protos.RequestType_DOWNLOAD_SETTINGS, settingsMessage},
 	}
 
-	response, err := s.Call(requests)
+	response, err := s.Call(ctx, requests)
 	if err != nil {
 		return err
 	}
@@ -138,7 +139,7 @@ func (s *Session) Init() error {
 }
 
 // Announce publishes the player's presence and returns the map environment
-func (s *Session) Announce() (mapObjects *protos.GetMapObjectsResponse, err error) {
+func (s *Session) Announce(ctx context.Context) (mapObjects *protos.GetMapObjectsResponse, err error) {
 
 	cellIDs := s.location.GetCellIDs()
 	lastTimestamp := time.Now().Unix() * 1000
@@ -171,7 +172,7 @@ func (s *Session) Announce() (mapObjects *protos.GetMapObjectsResponse, err erro
 		{protos.RequestType_GET_MAP_OBJECTS, getMapObjectsMessage},
 	}
 
-	response, err := s.Call(requests)
+	response, err := s.Call(ctx, requests)
 	if err != nil {
 		return mapObjects, &RequestError{}
 	}
@@ -187,9 +188,9 @@ func (s *Session) Announce() (mapObjects *protos.GetMapObjectsResponse, err erro
 }
 
 // GetPlayer returns the current player profile
-func (s *Session) GetPlayer() (*protos.GetPlayerResponse, error) {
+func (s *Session) GetPlayer(ctx context.Context) (*protos.GetPlayerResponse, error) {
 	requests := []*protos.Request{{RequestType: protos.RequestType_GET_PLAYER}}
-	response, err := s.Call(requests)
+	response, err := s.Call(ctx, requests)
 	if err != nil {
 		return nil, err
 	}
@@ -205,7 +206,7 @@ func (s *Session) GetPlayer() (*protos.GetPlayerResponse, error) {
 }
 
 // GetPlayerMap returns the surrounding map cells
-func (s *Session) GetPlayerMap() (*protos.GetMapObjectsResponse, error) {
+func (s *Session) GetPlayerMap(ctx context.Context) (*protos.GetMapObjectsResponse, error) {
 	cellIDS := s.location.GetCellIDs()
 	mapObjRequest, err := proto.Marshal(&protos.GetMapObjectsMessage{
 		CellId:           cellIDS,
@@ -220,7 +221,7 @@ func (s *Session) GetPlayerMap() (*protos.GetMapObjectsResponse, error) {
 		{RequestType: protos.RequestType_GET_MAP_OBJECTS, RequestMessage: mapObjRequest},
 	}
 
-	response, err := s.Call(requests)
+	response, err := s.Call(ctx, requests)
 	if err != nil {
 		return nil, err
 	}
@@ -236,9 +237,9 @@ func (s *Session) GetPlayerMap() (*protos.GetMapObjectsResponse, error) {
 }
 
 // GetInventory returns the player items
-func (s *Session) GetInventory() (*protos.GetInventoryResponse, error) {
+func (s *Session) GetInventory(ctx context.Context) (*protos.GetInventoryResponse, error) {
 	requests := []*protos.Request{{RequestType: protos.RequestType_GET_INVENTORY}}
-	response, err := s.Call(requests)
+	response, err := s.Call(ctx, requests)
 	if err != nil {
 		return nil, err
 	}

@@ -2,6 +2,7 @@ package cli
 
 import (
 	"github.com/urfave/cli"
+	"golang.org/x/net/context"
 
 	"github.com/pkmngo-odi/pogo/api"
 	"github.com/pkmngo-odi/pogo/auth"
@@ -19,8 +20,10 @@ type wrapper struct {
 	debug bool
 }
 
-func (w *wrapper) wrap(action func(*cli.Context, *api.Session, auth.Provider) error) func(*cli.Context) error {
-	return func(context *cli.Context) error {
+func (w *wrapper) wrap(action func(context.Context, *api.Session, auth.Provider) error) func(*cli.Context) error {
+	return func(c *cli.Context) error {
+
+		ctx := context.Background()
 
 		provider, err := auth.NewProvider(w.provider, w.username, w.password)
 		if err != nil {
@@ -35,6 +38,6 @@ func (w *wrapper) wrap(action func(*cli.Context, *api.Session, auth.Provider) er
 
 		client := api.NewSession(provider, location, &api.VoidFeed{}, w.debug)
 
-		return action(context, client, provider)
+		return action(ctx, client, provider)
 	}
 }

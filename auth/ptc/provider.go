@@ -8,6 +8,9 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"strings"
+
+	"golang.org/x/net/context"
+	"golang.org/x/net/context/ctxhttp"
 )
 
 const authorizeURL = "https://sso.pokemon.com/sso/oauth2.0/accessToken"
@@ -62,11 +65,11 @@ func (p *Provider) GetAccessToken() string {
 }
 
 // Login retrieves an access token from the Pokémon Trainer's Club
-func (p *Provider) Login() (string, error) {
+func (p *Provider) Login(ctx context.Context) (string, error) {
 	req1, _ := http.NewRequest("GET", loginURL, nil)
 	req1.Header.Set("User-Agent", "niantic")
 
-	resp1, err1 := p.http.Do(req1)
+	resp1, err1 := ctxhttp.Do(ctx, p.http, req1)
 	if err1 != nil {
 		return loginError("Could not start login process, the website might be down")
 	}
@@ -90,7 +93,7 @@ func (p *Provider) Login() (string, error) {
 	req2.Header.Set("User-Agent", "niantic")
 	req2.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	resp2, err2 := p.http.Do(req2)
+	resp2, err2 := ctxhttp.Do(ctx, p.http, req2)
 	if _, ok2 := err2.(*url.Error); !ok2 {
 
 		defer resp2.Body.Close()
@@ -122,7 +125,7 @@ func (p *Provider) Login() (string, error) {
 	req3.Header.Set("User-Agent", "niantic")
 	req3.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	resp3, err3 := p.http.Do(req3)
+	resp3, err3 := ctxhttp.Do(ctx, p.http, req3)
 	if err3 != nil {
 		return loginError("Could not authorize code")
 	}
