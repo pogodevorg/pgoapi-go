@@ -15,7 +15,7 @@ import (
 )
 
 const androidKeyBase64 = "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3iJIZdodyhKZQrNWp5nKJ3srRXcUW+F1BD3baEVGcmEgqaLZUNBjm057pKRI16kB0YppeGx5qIQ5QjKzsR8ETQbKLNWgRY0QRNVz34kMJR3P/LgHax/6rmf5AAAAAwEAAQ=="
-const androidId = "9774d56d682e549c"
+const androidID = "9774d56d682e549c"
 const service = "audience:server:client_id:848232511240-7so421jotr2609rmqakceuu1luuq0ptb.apps.googleusercontent.com"
 const app = "com.nianticlabs.pokemongo"
 const clientSig = "321187995bc7cdc2b5fc91b11a96e2baa8602c62"
@@ -68,7 +68,7 @@ func (p *Provider) Login() (string, error) {
 	postBody.Add("Email", p.username)
 	postBody.Add("service", service)
 	postBody.Add("source", "android")
-	postBody.Add("androidId", androidId)
+	postBody.Add("androidId", androidID)
 	postBody.Add("app", app)
 	postBody.Add("client_sig", clientSig)
 	postBody.Add("callerPkg", app)
@@ -77,7 +77,7 @@ func (p *Provider) Login() (string, error) {
 
 	req, err := http.NewRequest("POST", "https://android.clients.google.com/auth", strings.NewReader(string(postBody.Encode())))
 	req.Header.Set("User-Agent", "GoogleAuth/1.4 (mako JDQ39)")
-	req.Header.Set("Device", androidId)
+	req.Header.Set("Device", androidID)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("App", app)
 	req.Header.Set("Accept", "*/*")
