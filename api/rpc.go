@@ -62,6 +62,7 @@ func (c *RPC) Request(ctx context.Context, endpoint string, requestEnvelope *pro
 	if err != nil {
 		return responseEnvelope, raise(fmt.Sprintf("There was an error requesting the API: %s", err))
 	}
+	defer response.Body.Close()
 	if response.StatusCode != 200 {
 		return responseEnvelope, raise(fmt.Sprintf("Status code was %d, expected 200", response.StatusCode))
 	}
