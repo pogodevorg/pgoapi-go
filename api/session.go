@@ -1,6 +1,7 @@
 package api
 
 import (
+	"crypto/rand"
 	"fmt"
 	"log"
 	"time"
@@ -26,11 +27,16 @@ type Session struct {
 	debug    bool
 	debugger *jsonpb.Marshaler
 
+	started  time.Time
 	provider auth.Provider
 }
 
 func generateRequests() []*protos.Request {
 	return make([]*protos.Request, 0)
+}
+
+func getTimestamp(t time.Time) uint64 {
+	return uint64(t.UnixNano() / int64(time.Millisecond))
 }
 
 // NewSession constructs a Pokémon Go RPC API client
@@ -43,6 +49,7 @@ func NewSession(provider auth.Provider, location *Location, feed Feed, crypto Cr
 		debugger: &jsonpb.Marshaler{Indent: "\t"},
 		feed:     feed,
 		crypto:   crypto,
+		started:  time.Now(),
 	}
 }
 
@@ -76,6 +83,13 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 		},
 	}
 
+	// TODO: Add appropriate values to auth ticket
+	ticket := &protos.AuthTicket{
+		ExpireTimestampMs: 0,
+		Start:             make([]byte, 0),
+		End:               make([]byte, 0),
+	}
+
 	requestEnvelope := &protos.RequestEnvelope{
 		RequestId:  uint64(8145806132888207460),
 		StatusCode: int32(2),
@@ -85,9 +99,51 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 		Latitude:  s.location.Lat,
 		Altitude:  s.location.Alt,
 
-		AuthInfo: auth,
+		AuthInfo:   auth,
+		AuthTicket: ticket,
 
 		Requests: requests,
+	}
+
+	if s.crypto.Enabled() {
+		t := getTimestamp(time.Now())
+
+		requestHash := make([]uint64, len(requests))
+
+		for idx := range requests {
+			hash := uint64(0) // TODO: Hash serialized ticket & serialized request
+			requestHash[idx] = hash
+		}
+
+		locationHash1 := uint32(0) // TODO: Generate location hash with ticket, lat, lon & alt
+		locationHash2 := uint32(0) // TODO: Generate location hash with lat, lon & alt
+
+		unknown22 := make([]byte, 32)
+		_, err := rand.Read(unknown22)
+		if err != nil {
+			return nil, &FormattingError{}
+		}
+
+		signature := &protos.Signature{
+			RequestHash:         requestHash,
+			LocationHash1:       locationHash1,
+			LocationHash2:       locationHash2,
+			Unknown22:           unknown22,
+			Timestamp:           t,
+			TimestampSinceStart: (t - getTimestamp(s.started)),
+		}
+
+		signatureProto, err := proto.Marshal(signature)
+		if err != nil {
+			return nil, &FormattingError{}
+		}
+
+		requestEnvelope.Unknown6 = &protos.Unknown6{
+			RequestType: 6,
+			Unknown2: &protos.Unknown6_Unknown2{
+				EncryptedSignature: signatureProto,
+			},
+		}
 	}
 
 	if s.debug {

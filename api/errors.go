@@ -55,6 +55,13 @@ func (e *InvalidSessionError) Error() string {
 	return "The session token is invalid"
 }
 
+// FormattingError happens when the something in the request body was not right
+type FormattingError struct{}
+
+func (e *FormattingError) Error() string {
+	return "Request was malformatted and could not be performed"
+}
+
 // ResponseError happens when there's something wrong with the response object
 type ResponseError struct {
 	err error
