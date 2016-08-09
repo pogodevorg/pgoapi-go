@@ -138,10 +138,16 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 			return nil, &FormattingError{}
 		}
 
+		iv := s.crypto.CreateIV()
+		encryptedSignature, err := s.crypto.Encrypt(signatureProto, iv)
+		if err != nil {
+			return nil, &FormattingError{}
+		}
+
 		requestEnvelope.Unknown6 = &protos.Unknown6{
 			RequestType: 6,
 			Unknown2: &protos.Unknown6_Unknown2{
-				EncryptedSignature: signatureProto,
+				EncryptedSignature: encryptedSignature,
 			},
 		}
 	}
