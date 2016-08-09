@@ -110,16 +110,26 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 
 		requestHash := make([]uint64, len(requests))
 
-		for idx := range requests {
-			hash := uint64(0) // TODO: Hash serialized ticket & serialized request
+		for idx, request := range requests {
+			hash, err := generateRequestHash(ticket, request)
+			if err != nil {
+				return nil, err
+			}
 			requestHash[idx] = hash
 		}
 
-		locationHash1 := uint32(0) // TODO: Generate location hash with ticket, lat, lon & alt
-		locationHash2 := uint32(0) // TODO: Generate location hash with lat, lon & alt
+		locationHash1, err := generateLocation1(ticket, s.location)
+		if err != nil {
+			return nil, err
+		}
+
+		locationHash2, err := generateLocation2(s.location)
+		if err != nil {
+			return nil, err
+		}
 
 		unknown22 := make([]byte, 32)
-		_, err := rand.Read(unknown22)
+		_, err = rand.Read(unknown22)
 		if err != nil {
 			return nil, &FormattingError{}
 		}

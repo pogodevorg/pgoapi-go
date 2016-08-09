@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/binary"
 	"math"
 
 	"github.com/golang/geo/s2"
@@ -54,4 +55,13 @@ func (l *Location) DistanceToFort(fort *protos.FortData) float64 {
 	h := dla*dla + math.Cos(la1)*math.Cos(la2)*dlo*dlo
 
 	return 2 * earthRadiusInMeters * math.Asin(math.Sqrt(h))
+}
+
+// GetBytes returns a byte slice of the location coordinates
+func (l *Location) GetBytes() []byte {
+	b := make([]byte, 24)
+	binary.LittleEndian.PutUint64(b, math.Float64bits(l.Lat))
+	binary.LittleEndian.PutUint64(b[8:], math.Float64bits(l.Lon))
+	binary.LittleEndian.PutUint64(b[16:], math.Float64bits(l.Alt))
+	return b
 }
