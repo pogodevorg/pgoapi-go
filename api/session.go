@@ -19,6 +19,7 @@ const downloadSettingsHash = "05daf51635c82611d1aac95c0b051d3ec088a930"
 // Session is used to communicate with the Pokémon Go API
 type Session struct {
 	feed     Feed
+	crypto   Crypto
 	location *Location
 	rpc      *RPC
 	url      string
@@ -41,6 +42,7 @@ func NewSession(provider auth.Provider, location *Location, feed Feed, crypto Cr
 		debug:    debug,
 		debugger: &jsonpb.Marshaler{Indent: "\t"},
 		feed:     feed,
+		crypto:   crypto,
 	}
 }
 
