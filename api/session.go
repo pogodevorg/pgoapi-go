@@ -33,7 +33,7 @@ func generateRequests() []*protos.Request {
 }
 
 // NewSession constructs a Pokémon Go RPC API client
-func NewSession(provider auth.Provider, location *Location, feed Feed, debug bool) *Session {
+func NewSession(provider auth.Provider, location *Location, feed Feed, crypto Crypto, debug bool) *Session {
 	return &Session{
 		location: location,
 		rpc:      NewRPC(),
