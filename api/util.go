@@ -49,7 +49,7 @@ func generateRequestHash(authTicket *protos.AuthTicket, request *protos.Request)
 	if err != nil {
 		return h, &FormattingError{}
 	}
-	h, err = protoToXXHash64(h, authTicket)
+	h, err = protoToXXHash64(h, request)
 	if err != nil {
 		return h, &FormattingError{}
 	}
