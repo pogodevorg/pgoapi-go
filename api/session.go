@@ -257,7 +257,7 @@ func (s *Session) Announce(ctx context.Context) (mapObjects *protos.GetMapObject
 	}
 
 	mapObjects = &protos.GetMapObjectsResponse{}
-	err = proto.Unmarshal(response.Returns[0], mapObjects)
+	err = proto.Unmarshal(response.Returns[5], mapObjects)
 	if err != nil {
 		return nil, &ResponseError{err}
 	}
@@ -286,33 +286,7 @@ func (s *Session) GetPlayer(ctx context.Context) (*protos.GetPlayerResponse, err
 
 // GetPlayerMap returns the surrounding map cells
 func (s *Session) GetPlayerMap(ctx context.Context) (*protos.GetMapObjectsResponse, error) {
-	cellIDS := s.location.GetCellIDs()
-	mapObjRequest, err := proto.Marshal(&protos.GetMapObjectsMessage{
-		CellId:           cellIDS,
-		SinceTimestampMs: make([]int64, len(cellIDS)),
-		Latitude:         s.location.Lat,
-		Longitude:        s.location.Lon,
-	})
-	if err != nil {
-		return nil, err
-	}
-	requests := []*protos.Request{
-		{RequestType: protos.RequestType_GET_MAP_OBJECTS, RequestMessage: mapObjRequest},
-	}
-
-	response, err := s.Call(ctx, requests)
-	if err != nil {
-		return nil, err
-	}
-
-	mapCells := &protos.GetMapObjectsResponse{}
-	mapCellBytes := response.Returns[0]
-	err = proto.Unmarshal(mapCellBytes, mapCells)
-	if err != nil {
-		return nil, &ResponseError{err}
-	}
-	s.feed.Push(mapCells)
-	return mapCells, GetErrorFromStatus(response.StatusCode)
+	return s.Announce(ctx)
 }
 
 // GetInventory returns the player items
