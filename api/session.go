@@ -1,6 +1,7 @@
 package api
 
 import (
+	"crypto/rand"
 	"fmt"
 	"log"
 	"time"
@@ -19,34 +20,50 @@ const downloadSettingsHash = "05daf51635c82611d1aac95c0b051d3ec088a930"
 // Session is used to communicate with the Pokémon Go API
 type Session struct {
 	feed     Feed
+	crypto   Crypto
 	location *Location
 	rpc      *RPC
 	url      string
 	debug    bool
 	debugger *jsonpb.Marshaler
 
-	provider auth.Provider
+	hasTicket bool
+	ticket    *protos.AuthTicket
+	started   time.Time
+	provider  auth.Provider
 }
 
 func generateRequests() []*protos.Request {
 	return make([]*protos.Request, 0)
 }
 
+func getTimestamp(t time.Time) uint64 {
+	return uint64(t.UnixNano() / int64(time.Millisecond))
+}
+
 // NewSession constructs a Pokémon Go RPC API client
-func NewSession(provider auth.Provider, location *Location, feed Feed, debug bool) *Session {
+func NewSession(provider auth.Provider, location *Location, feed Feed, crypto Crypto, debug bool) *Session {
 	return &Session{
-		location: location,
-		rpc:      NewRPC(),
-		provider: provider,
-		debug:    debug,
-		debugger: &jsonpb.Marshaler{Indent: "\t"},
-		feed:     feed,
+		location:  location,
+		rpc:       NewRPC(),
+		provider:  provider,
+		debug:     debug,
+		debugger:  &jsonpb.Marshaler{Indent: "\t"},
+		feed:      feed,
+		crypto:    crypto,
+		started:   time.Now(),
+		hasTicket: false,
 	}
 }
 
 // SetTimeout sets the client timeout for the RPC API
 func (s *Session) SetTimeout(d time.Duration) {
 	s.rpc.http.Timeout = d
+}
+
+func (s *Session) setTicket(ticket *protos.AuthTicket) {
+	s.hasTicket = true
+	s.ticket = ticket
 }
 
 func (s *Session) setURL(urlToken string) {
@@ -63,16 +80,15 @@ func (s *Session) getURL() string {
 	return url
 }
 
+func (s *Session) debugProtoMessage(label string, pb proto.Message) {
+	if s.debug {
+		str, _ := s.debugger.MarshalToString(pb)
+		log.Println(fmt.Sprintf("%s: %s", label, str))
+	}
+}
+
 // Call queries the Pokémon Go API through RPC protobuf
 func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos.ResponseEnvelope, error) {
-
-	auth := &protos.RequestEnvelope_AuthInfo{
-		Provider: s.provider.GetProviderString(),
-		Token: &protos.RequestEnvelope_AuthInfo_JWT{
-			Contents: s.provider.GetAccessToken(),
-			Unknown2: int32(59),
-		},
-	}
 
 	requestEnvelope := &protos.RequestEnvelope{
 		RequestId:  uint64(8145806132888207460),
@@ -83,20 +99,85 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 		Latitude:  s.location.Lat,
 		Altitude:  s.location.Alt,
 
-		AuthInfo: auth,
-
 		Requests: requests,
 	}
 
-	if s.debug {
-		log.Println(s.debugger.MarshalToString(requestEnvelope))
+	if s.hasTicket {
+		requestEnvelope.AuthTicket = s.ticket
+	} else {
+		requestEnvelope.AuthInfo = &protos.RequestEnvelope_AuthInfo{
+			Provider: s.provider.GetProviderString(),
+			Token: &protos.RequestEnvelope_AuthInfo_JWT{
+				Contents: s.provider.GetAccessToken(),
+				Unknown2: int32(59),
+			},
+		}
 	}
+
+	if s.crypto.Enabled() && s.hasTicket {
+		t := getTimestamp(time.Now())
+
+		requestHash := make([]uint64, len(requests))
+
+		for idx, request := range requests {
+			hash, err := generateRequestHash(s.ticket, request)
+			if err != nil {
+				return nil, err
+			}
+			requestHash[idx] = hash
+		}
+
+		locationHash1, err := generateLocation1(s.ticket, s.location)
+		if err != nil {
+			return nil, err
+		}
+
+		locationHash2, err := generateLocation2(s.location)
+		if err != nil {
+			return nil, err
+		}
+
+		unknown22 := make([]byte, 32)
+		_, err = rand.Read(unknown22)
+		if err != nil {
+			return nil, &FormattingError{}
+		}
+
+		signature := &protos.Signature{
+			RequestHash:         requestHash,
+			LocationHash1:       locationHash1,
+			LocationHash2:       locationHash2,
+			Unknown22:           unknown22,
+			Timestamp:           t,
+			TimestampSinceStart: (t - getTimestamp(s.started)),
+		}
+
+		signatureProto, err := proto.Marshal(signature)
+		if err != nil {
+			return nil, &FormattingError{}
+		}
+
+		iv := s.crypto.CreateIV()
+		encryptedSignature, err := s.crypto.Encrypt(signatureProto, iv)
+		if err != nil {
+			return nil, &FormattingError{}
+		}
+
+		requestEnvelope.Unknown6 = &protos.Unknown6{
+			RequestType: 6,
+			Unknown2: &protos.Unknown6_Unknown2{
+				EncryptedSignature: encryptedSignature,
+			},
+		}
+
+		s.debugProtoMessage("request signature", signature)
+	}
+
+	s.debugProtoMessage("request envelope", requestEnvelope)
 
 	responseEnvelope, err := s.rpc.Request(ctx, s.getURL(), requestEnvelope)
 
-	if s.debug {
-		log.Println(s.debugger.MarshalToString(responseEnvelope))
-	}
+	s.debugProtoMessage("response envelope", responseEnvelope)
 
 	return responseEnvelope, err
 }
@@ -133,8 +214,11 @@ func (s *Session) Init(ctx context.Context) error {
 	if url == "" {
 		return fmt.Errorf("Could not initialize session, the service might be down")
 	}
-
 	s.setURL(url)
+
+	ticket := response.GetAuthTicket()
+	s.setTicket(ticket)
+
 	return nil
 }
 
@@ -178,11 +262,12 @@ func (s *Session) Announce(ctx context.Context) (mapObjects *protos.GetMapObject
 	}
 
 	mapObjects = &protos.GetMapObjectsResponse{}
-	err = proto.Unmarshal(response.Returns[0], mapObjects)
+	err = proto.Unmarshal(response.Returns[5], mapObjects)
 	if err != nil {
 		return nil, &ResponseError{err}
 	}
 	s.feed.Push(mapObjects)
+	s.debugProtoMessage("response return[5]", mapObjects)
 
 	return mapObjects, GetErrorFromStatus(response.StatusCode)
 }
@@ -201,39 +286,14 @@ func (s *Session) GetPlayer(ctx context.Context) (*protos.GetPlayerResponse, err
 		return nil, &ResponseError{err}
 	}
 	s.feed.Push(player)
+	s.debugProtoMessage("response return[0]", player)
 
 	return player, GetErrorFromStatus(response.StatusCode)
 }
 
 // GetPlayerMap returns the surrounding map cells
 func (s *Session) GetPlayerMap(ctx context.Context) (*protos.GetMapObjectsResponse, error) {
-	cellIDS := s.location.GetCellIDs()
-	mapObjRequest, err := proto.Marshal(&protos.GetMapObjectsMessage{
-		CellId:           cellIDS,
-		SinceTimestampMs: make([]int64, len(cellIDS)),
-		Latitude:         s.location.Lat,
-		Longitude:        s.location.Lon,
-	})
-	if err != nil {
-		return nil, err
-	}
-	requests := []*protos.Request{
-		{RequestType: protos.RequestType_GET_MAP_OBJECTS, RequestMessage: mapObjRequest},
-	}
-
-	response, err := s.Call(ctx, requests)
-	if err != nil {
-		return nil, err
-	}
-
-	mapCells := &protos.GetMapObjectsResponse{}
-	mapCellBytes := response.Returns[0]
-	err = proto.Unmarshal(mapCellBytes, mapCells)
-	if err != nil {
-		return nil, &ResponseError{err}
-	}
-	s.feed.Push(mapCells)
-	return mapCells, GetErrorFromStatus(response.StatusCode)
+	return s.Announce(ctx)
 }
 
 // GetInventory returns the player items
@@ -249,5 +309,7 @@ func (s *Session) GetInventory(ctx context.Context) (*protos.GetInventoryRespons
 		return nil, &ResponseError{err}
 	}
 	s.feed.Push(inventory)
+	s.debugProtoMessage("response return[0]", inventory)
+
 	return inventory, GetErrorFromStatus(response.StatusCode)
 }
