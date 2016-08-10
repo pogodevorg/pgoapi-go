@@ -80,6 +80,13 @@ func (s *Session) getURL() string {
 	return url
 }
 
+func (s *Session) debugProtoMessage(label string, pb proto.Message) {
+	if s.debug {
+		str, _ := s.debugger.MarshalToString(pb)
+		log.Println(fmt.Sprintf("%s: %s", label, str))
+	}
+}
+
 // Call queries the Pokémon Go API through RPC protobuf
 func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos.ResponseEnvelope, error) {
 
@@ -145,10 +152,6 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 			TimestampSinceStart: (t - getTimestamp(s.started)),
 		}
 
-		if s.debug {
-			log.Println(s.debugger.MarshalToString(signature))
-		}
-
 		signatureProto, err := proto.Marshal(signature)
 		if err != nil {
 			return nil, &FormattingError{}
@@ -166,17 +169,15 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 				EncryptedSignature: encryptedSignature,
 			},
 		}
+
+		s.debugProtoMessage("request signature", signature)
 	}
 
-	if s.debug {
-		log.Println(s.debugger.MarshalToString(requestEnvelope))
-	}
+	s.debugProtoMessage("request envelope", requestEnvelope)
 
 	responseEnvelope, err := s.rpc.Request(ctx, s.getURL(), requestEnvelope)
 
-	if s.debug {
-		log.Println(s.debugger.MarshalToString(responseEnvelope))
-	}
+	s.debugProtoMessage("response envelope", responseEnvelope)
 
 	return responseEnvelope, err
 }
@@ -266,9 +267,7 @@ func (s *Session) Announce(ctx context.Context) (mapObjects *protos.GetMapObject
 		return nil, &ResponseError{err}
 	}
 	s.feed.Push(mapObjects)
-	if s.debug {
-		log.Println(s.debugger.MarshalToString(mapObjects))
-	}
+	s.debugProtoMessage("response return[5]", mapObjects)
 
 	return mapObjects, GetErrorFromStatus(response.StatusCode)
 }
@@ -287,9 +286,7 @@ func (s *Session) GetPlayer(ctx context.Context) (*protos.GetPlayerResponse, err
 		return nil, &ResponseError{err}
 	}
 	s.feed.Push(player)
-	if s.debug {
-		log.Println(s.debugger.MarshalToString(player))
-	}
+	s.debugProtoMessage("response return[0]", player)
 
 	return player, GetErrorFromStatus(response.StatusCode)
 }
@@ -312,9 +309,7 @@ func (s *Session) GetInventory(ctx context.Context) (*protos.GetInventoryRespons
 		return nil, &ResponseError{err}
 	}
 	s.feed.Push(inventory)
-	if s.debug {
-		log.Println(s.debugger.MarshalToString(inventory))
-	}
+	s.debugProtoMessage("response return[0]", inventory)
 
 	return inventory, GetErrorFromStatus(response.StatusCode)
 }
