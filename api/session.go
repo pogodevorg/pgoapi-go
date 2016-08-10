@@ -145,6 +145,10 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 			TimestampSinceStart: (t - getTimestamp(s.started)),
 		}
 
+		if s.debug {
+			log.Println(s.debugger.MarshalToString(signature))
+		}
+
 		signatureProto, err := proto.Marshal(signature)
 		if err != nil {
 			return nil, &FormattingError{}
