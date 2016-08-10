@@ -27,8 +27,10 @@ type Session struct {
 	debug    bool
 	debugger *jsonpb.Marshaler
 
-	started  time.Time
-	provider auth.Provider
+	hasTicket bool
+	ticket    *protos.AuthTicket
+	started   time.Time
+	provider  auth.Provider
 }
 
 func generateRequests() []*protos.Request {
@@ -42,20 +44,26 @@ func getTimestamp(t time.Time) uint64 {
 // NewSession constructs a Pokémon Go RPC API client
 func NewSession(provider auth.Provider, location *Location, feed Feed, crypto Crypto, debug bool) *Session {
 	return &Session{
-		location: location,
-		rpc:      NewRPC(),
-		provider: provider,
-		debug:    debug,
-		debugger: &jsonpb.Marshaler{Indent: "\t"},
-		feed:     feed,
-		crypto:   crypto,
-		started:  time.Now(),
+		location:  location,
+		rpc:       NewRPC(),
+		provider:  provider,
+		debug:     debug,
+		debugger:  &jsonpb.Marshaler{Indent: "\t"},
+		feed:      feed,
+		crypto:    crypto,
+		started:   time.Now(),
+		hasTicket: false,
 	}
 }
 
 // SetTimeout sets the client timeout for the RPC API
 func (s *Session) SetTimeout(d time.Duration) {
 	s.rpc.http.Timeout = d
+}
+
+func (s *Session) setTicket(ticket *protos.AuthTicket) {
+	s.hasTicket = true
+	s.ticket = ticket
 }
 
 func (s *Session) setURL(urlToken string) {
@@ -75,21 +83,6 @@ func (s *Session) getURL() string {
 // Call queries the Pokémon Go API through RPC protobuf
 func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos.ResponseEnvelope, error) {
 
-	auth := &protos.RequestEnvelope_AuthInfo{
-		Provider: s.provider.GetProviderString(),
-		Token: &protos.RequestEnvelope_AuthInfo_JWT{
-			Contents: s.provider.GetAccessToken(),
-			Unknown2: int32(59),
-		},
-	}
-
-	// TODO: Add appropriate values to auth ticket
-	ticket := &protos.AuthTicket{
-		ExpireTimestampMs: 0,
-		Start:             make([]byte, 0),
-		End:               make([]byte, 0),
-	}
-
 	requestEnvelope := &protos.RequestEnvelope{
 		RequestId:  uint64(8145806132888207460),
 		StatusCode: int32(2),
@@ -99,26 +92,35 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 		Latitude:  s.location.Lat,
 		Altitude:  s.location.Alt,
 
-		AuthInfo:   auth,
-		AuthTicket: ticket,
-
 		Requests: requests,
 	}
 
-	if s.crypto.Enabled() {
+	if s.hasTicket {
+		requestEnvelope.AuthTicket = s.ticket
+	} else {
+		requestEnvelope.AuthInfo = &protos.RequestEnvelope_AuthInfo{
+			Provider: s.provider.GetProviderString(),
+			Token: &protos.RequestEnvelope_AuthInfo_JWT{
+				Contents: s.provider.GetAccessToken(),
+				Unknown2: int32(59),
+			},
+		}
+	}
+
+	if s.crypto.Enabled() && s.hasTicket {
 		t := getTimestamp(time.Now())
 
 		requestHash := make([]uint64, len(requests))
 
 		for idx, request := range requests {
-			hash, err := generateRequestHash(ticket, request)
+			hash, err := generateRequestHash(s.ticket, request)
 			if err != nil {
 				return nil, err
 			}
 			requestHash[idx] = hash
 		}
 
-		locationHash1, err := generateLocation1(ticket, s.location)
+		locationHash1, err := generateLocation1(s.ticket, s.location)
 		if err != nil {
 			return nil, err
 		}
@@ -207,8 +209,11 @@ func (s *Session) Init(ctx context.Context) error {
 	if url == "" {
 		return fmt.Errorf("Could not initialize session, the service might be down")
 	}
-
 	s.setURL(url)
+
+	ticket := response.GetAuthTicket()
+	s.setTicket(ticket)
+
 	return nil
 }
 
