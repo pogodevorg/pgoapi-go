@@ -4,7 +4,7 @@ import (
 	"math"
 
 	"github.com/golang/geo/s2"
-	protos "github.com/pkmngo-odi/pogo-protos"
+	"github.com/pokeintel/pogo-protos"
 )
 
 const cellIDLevel = 15

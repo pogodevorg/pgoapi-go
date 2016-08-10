@@ -8,10 +8,9 @@ import (
 	"net/http/cookiejar"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/pokeintel/pogo-protos"
 	"golang.org/x/net/context"
 	"golang.org/x/net/context/ctxhttp"
-
-	"github.com/pkmngo-odi/pogo-protos"
 )
 
 const rpcUserAgent = "Niantic App"

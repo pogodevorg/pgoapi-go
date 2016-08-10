@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/pkmngo-odi/pogo/cli"
+	"github.com/pokeintel/pogo/cli"
 )
 
 func main() {
