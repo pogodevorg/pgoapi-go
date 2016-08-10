@@ -60,8 +60,8 @@ func (l *Location) DistanceToFort(fort *protos.FortData) float64 {
 // GetBytes returns a byte slice of the location coordinates
 func (l *Location) GetBytes() []byte {
 	b := make([]byte, 24)
-	binary.LittleEndian.PutUint64(b, math.Float64bits(l.Lat))
-	binary.LittleEndian.PutUint64(b[8:], math.Float64bits(l.Lon))
-	binary.LittleEndian.PutUint64(b[16:], math.Float64bits(l.Alt))
-	return b
+	binary.BigEndian.PutUint64(b[0:8], math.Float64bits(l.Lat))
+	binary.BigEndian.PutUint64(b[8:16], math.Float64bits(l.Lon))
+	binary.BigEndian.PutUint64(b[16:24], math.Float64bits(l.Alt))
+	return b[:16]
 }
