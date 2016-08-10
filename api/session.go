@@ -262,6 +262,9 @@ func (s *Session) Announce(ctx context.Context) (mapObjects *protos.GetMapObject
 		return nil, &ResponseError{err}
 	}
 	s.feed.Push(mapObjects)
+	if s.debug {
+		log.Println(s.debugger.MarshalToString(mapObjects))
+	}
 
 	return mapObjects, GetErrorFromStatus(response.StatusCode)
 }
@@ -280,6 +283,9 @@ func (s *Session) GetPlayer(ctx context.Context) (*protos.GetPlayerResponse, err
 		return nil, &ResponseError{err}
 	}
 	s.feed.Push(player)
+	if s.debug {
+		log.Println(s.debugger.MarshalToString(player))
+	}
 
 	return player, GetErrorFromStatus(response.StatusCode)
 }
@@ -302,5 +308,9 @@ func (s *Session) GetInventory(ctx context.Context) (*protos.GetInventoryRespons
 		return nil, &ResponseError{err}
 	}
 	s.feed.Push(inventory)
+	if s.debug {
+		log.Println(s.debugger.MarshalToString(inventory))
+	}
+
 	return inventory, GetErrorFromStatus(response.StatusCode)
 }
