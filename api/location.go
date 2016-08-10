@@ -63,5 +63,5 @@ func (l *Location) GetBytes() []byte {
 	binary.BigEndian.PutUint64(b[0:8], math.Float64bits(l.Lat))
 	binary.BigEndian.PutUint64(b[8:16], math.Float64bits(l.Lon))
 	binary.BigEndian.PutUint64(b[16:24], math.Float64bits(l.Alt))
-	return b[:16]
+	return b[:24]
 }
