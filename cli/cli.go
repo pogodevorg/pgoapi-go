@@ -1,13 +1,16 @@
 package cli
 
 import (
+	"github.com/pokeintel/pogo/api"
 	"github.com/urfave/cli"
 )
 
 // Run interprets arguments and performs actions
-func Run(args []string) {
+func Run(crypto api.Crypto, args []string) {
 
-	w := wrapper{}
+	w := wrapper{
+		crypto: crypto,
+	}
 
 	app := cli.NewApp()
 	app.Name = "pogo"
