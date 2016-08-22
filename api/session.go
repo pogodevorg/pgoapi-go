@@ -8,10 +8,10 @@ import (
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
-	"github.com/pokeintel/pogo-protos"
+	"github.com/pogodevorg/pogo-protos"
 	"golang.org/x/net/context"
 
-	"github.com/pokeintel/pogo/auth"
+	"github.com/pogodevorg/pogo/auth"
 )
 
 const defaultURL = "https://pgorelease.nianticlabs.com/plfe/rpc"

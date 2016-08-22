@@ -8,7 +8,7 @@ import (
 	"net/http/cookiejar"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/pokeintel/pogo-protos"
+	"github.com/pogodevorg/pogo-protos"
 	"golang.org/x/net/context"
 	"golang.org/x/net/context/ctxhttp"
 )
