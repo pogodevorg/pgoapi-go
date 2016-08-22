@@ -47,8 +47,6 @@ func main() {
   feed := &api.VoidFeed{}
 
   // Set up the type of crypto to use for signing requests
-  // If you don't know how this is set up, join our Discord
-  // chat and ask us https://discordapp.com/invite/dKTSHZC
   //
   // For most intents and purposes, you should be fine with
   // using the Default crypto.
