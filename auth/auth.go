@@ -6,8 +6,8 @@ import (
 
 	"golang.org/x/net/context"
 
-	"github.com/pokeintel/pogo/auth/google"
-	"github.com/pokeintel/pogo/auth/ptc"
+	"github.com/pogodevorg/pogo/auth/google"
+	"github.com/pogodevorg/pogo/auth/ptc"
 )
 
 // Provider is a common interface for managing auth tokens with the different third party authenticators

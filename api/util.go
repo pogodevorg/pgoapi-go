@@ -3,7 +3,7 @@ package api
 import (
 	"github.com/OneOfOne/xxhash"
 	"github.com/golang/protobuf/proto"
-	"github.com/pokeintel/pogo-protos"
+	"github.com/pogodevorg/pogo-protos"
 )
 
 const hashSeed = uint64(0x1B845238) // Static xxhash seed

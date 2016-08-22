@@ -1,7 +1,7 @@
 # pogo
 Pokémon Go API tools written in Golang
 
-Source at: https://github.com/pokeintel/pogo
+Source at: https://github.com/pogodevorg/pogo
 
 ## Library
 You can include this package as a library in your own project.
@@ -18,8 +18,8 @@ import (
 
   "golang.org/x/net/context"
 
-  "github.com/pokeintel/pogo/api"
-  "github.com/pokeintel/pogo/auth"
+  "github.com/pogodevorg/pogo/api"
+  "github.com/pogodevorg/pogo/auth"
 )
 
 func main() {
@@ -110,7 +110,7 @@ func (f *DebugFeed) Push(entry interface{}) {
 Make sure you're running the latest version of Go, then simply install through `go get`.
 
 ```bash
-$ go get -u github.com/pokeintel/pogo
+$ go get -u github.com/pogodevorg/pogo
 ```
 
 ### Usage
