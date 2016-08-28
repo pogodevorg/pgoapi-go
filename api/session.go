@@ -165,23 +165,19 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 			return nil, ErrFormatting
 		}
 
-		requestMessage := &protos.SendEncryptedSignatureRequest{
+		requestMessage, err := proto.Marshal(&protos.SendEncryptedSignatureRequest{
 			EncryptedSignature: encryptedSignature,
-		}
-		requestMessageProto, err := proto.Marshal(requestMessage)
+		})
 		if err != nil {
 			return nil, ErrFormatting
 		}
 
-		platformRequest := &protos.RequestEnvelope_PlatformRequest{
-			Type:           protos.PlatformRequestType_SEND_ENCRYPTED_SIGNATURE,
-			RequestMessage: requestMessageProto,
+		requestEnvelope.PlatformRequests = []*protos.RequestEnvelope_PlatformRequest{
+			{
+				Type:           protos.PlatformRequestType_SEND_ENCRYPTED_SIGNATURE,
+				RequestMessage: requestMessage,
+			},
 		}
-
-		var platformRequests []*protos.RequestEnvelope_PlatformRequest
-		platformRequests = append(platformRequests, platformRequest)
-
-		requestEnvelope.PlatformRequests = platformRequests
 
 		s.debugProtoMessage("request signature", signature)
 	}
