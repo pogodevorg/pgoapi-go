@@ -11,7 +11,7 @@ import (
 var ErrFormatting = errors.New("Request was malformatted and could not be performed")
 
 // ErrNewRPCURL happens when there is a new RPC url available in the response body
-var ErrNewRPCURL = errors.New("There is a new RPC url in the response, please retry the request")
+var ErrNewRPCURL = errors.New("There is a new RPC url in the response, please use the new URL for future requests")
 
 // ErrBadRequest happens when the remote service thinks the request is malformatted
 var ErrBadRequest = errors.New("The remote service responded but appear to think the request is malformatted")
