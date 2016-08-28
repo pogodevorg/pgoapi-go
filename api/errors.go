@@ -10,18 +10,29 @@ import (
 // ErrFormatting happens when the something in the request body was not right
 var ErrFormatting = errors.New("Request was malformatted and could not be performed")
 
-
-// ErrRequest happens when there is an unknown issue with the request
-var ErrRequest = errors.New("The request could not be completed")
-
 // ErrNewRPCURL happens when there is a new RPC url available in the response body
-var ErrNewRPCURL = errors.New("The request could not be completed")
+var ErrNewRPCURL = errors.New("There is a new RPC url in the response, please retry the request")
+
+// ErrBadRequest happens when the remote service thinks the request is malformatted
+var ErrBadRequest = errors.New("The remote service responded but appear to think the request is malformatted")
+
+// ErrInvalidRequest happens when the request is invalid
+var ErrInvalidRequest = errors.New("The remote service responded but appear to think the request is invalid")
+
+// ErrInvalidPlatformRequest happens when a platform specific request like the request signature being incorrect
+var ErrInvalidPlatformRequest = errors.New("A platform specific request is invalid")
+
+// ErrSessionInvalidated happens when the session has been invalidated by the remote service
+var ErrSessionInvalidated = errors.New("The session has been invalidated")
 
 // ErrInvalidAuthToken happens when the currently used auth token is not vailid
 var ErrInvalidAuthToken = errors.New("The auth token used is not vailid")
 
 // ErrRedirect happens when an invalid session endpoint has been used
 var ErrRedirect = errors.New("The request was redirected")
+
+// ErrRequest happens when there is an unknown issue with the request
+var ErrRequest = errors.New("The remote service responded but the request could not be completed for unknown reasons")
 
 // GetErrorFromStatus will, depending on the status code, give you an error or nil if there is no error
 func GetErrorFromStatus(status protos.ResponseEnvelope_StatusCode) error {
@@ -30,8 +41,16 @@ func GetErrorFromStatus(status protos.ResponseEnvelope_StatusCode) error {
 		return nil
 	case protos.ResponseEnvelope_OK_RPC_URL_IN_RESPONSE:
 		return ErrNewRPCURL
+	case protos.ResponseEnvelope_BAD_REQUEST:
+		return ErrBadRequest
+	case protos.ResponseEnvelope_INVALID_REQUEST:
+		return ErrInvalidRequest
+	case protos.ResponseEnvelope_INVALID_PLATFORM_REQUEST:
+		return ErrInvalidPlatformRequest
 	case protos.ResponseEnvelope_REDIRECT:
 		return ErrRedirect
+	case protos.ResponseEnvelope_SESSION_INVALIDATED:
+		return ErrSessionInvalidated
 	case protos.ResponseEnvelope_INVALID_AUTH_TOKEN:
 		return ErrInvalidAuthToken
 	default:
