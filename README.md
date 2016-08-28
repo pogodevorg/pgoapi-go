@@ -1,6 +1,8 @@
 # pogo
 Pokémon Go API tools written in Golang
 
+[![Build Status](https://travis-ci.org/pogodevorg/pogo.svg?branch=master)](https://travis-ci.org/pogodevorg/pogo)
+
 Source at: https://github.com/pogodevorg/pogo
 
 ## Library
