@@ -93,11 +93,13 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 	requestEnvelope := &protos.RequestEnvelope{
 		RequestId:  uint64(8145806132888207460),
 		StatusCode: int32(2),
-		Unknown12:  int64(989),
+
+		MsSinceLastLocationfix: int64(989),
 
 		Longitude: s.location.Lon,
 		Latitude:  s.location.Lat,
-		Altitude:  s.location.Alt,
+
+		Accuracy: float64(0),
 
 		Requests: requests,
 	}
@@ -137,38 +139,49 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 			return nil, err
 		}
 
-		unknown22 := make([]byte, 32)
-		_, err = rand.Read(unknown22)
+		sessionHash := make([]byte, 32)
+		_, err = rand.Read(sessionHash)
 		if err != nil {
-			return nil, &FormattingError{}
+			return nil, ErrFormatting
 		}
 
 		signature := &protos.Signature{
 			RequestHash:         requestHash,
 			LocationHash1:       locationHash1,
 			LocationHash2:       locationHash2,
-			Unknown22:           unknown22,
+			SessionHash:         sessionHash,
 			Timestamp:           t,
 			TimestampSinceStart: (t - getTimestamp(s.started)),
 		}
 
 		signatureProto, err := proto.Marshal(signature)
 		if err != nil {
-			return nil, &FormattingError{}
+			return nil, ErrFormatting
 		}
 
 		iv := s.crypto.CreateIV()
 		encryptedSignature, err := s.crypto.Encrypt(signatureProto, iv)
 		if err != nil {
-			return nil, &FormattingError{}
+			return nil, ErrFormatting
 		}
 
-		requestEnvelope.Unknown6 = &protos.Unknown6{
-			RequestType: 6,
-			Unknown2: &protos.Unknown6_Unknown2{
-				EncryptedSignature: encryptedSignature,
-			},
+		requestMessage := &protos.SendEncryptedSignatureRequest{
+			EncryptedSignature: encryptedSignature,
 		}
+		requestMessageProto, err := proto.Marshal(requestMessage)
+		if err != nil {
+			return nil, ErrFormatting
+		}
+
+		platformRequest := &protos.RequestEnvelope_PlatformRequest{
+			Type:           protos.PlatformRequestType_SEND_ENCRYPTED_SIGNATURE,
+			RequestMessage: requestMessageProto,
+		}
+
+		var platformRequests []*protos.RequestEnvelope_PlatformRequest
+		platformRequests = append(platformRequests, platformRequest)
+
+		requestEnvelope.PlatformRequests = platformRequests
 
 		s.debugProtoMessage("request signature", signature)
 	}
@@ -258,13 +271,13 @@ func (s *Session) Announce(ctx context.Context) (mapObjects *protos.GetMapObject
 
 	response, err := s.Call(ctx, requests)
 	if err != nil {
-		return mapObjects, &RequestError{}
+		return mapObjects, ErrRequest
 	}
 
 	mapObjects = &protos.GetMapObjectsResponse{}
 	err = proto.Unmarshal(response.Returns[5], mapObjects)
 	if err != nil {
-		return nil, &ResponseError{err}
+		return nil, &ErrResponse{err}
 	}
 	s.feed.Push(mapObjects)
 	s.debugProtoMessage("response return[5]", mapObjects)
@@ -283,7 +296,7 @@ func (s *Session) GetPlayer(ctx context.Context) (*protos.GetPlayerResponse, err
 	player := &protos.GetPlayerResponse{}
 	err = proto.Unmarshal(response.Returns[0], player)
 	if err != nil {
-		return nil, &ResponseError{err}
+		return nil, &ErrResponse{err}
 	}
 	s.feed.Push(player)
 	s.debugProtoMessage("response return[0]", player)
@@ -306,7 +319,7 @@ func (s *Session) GetInventory(ctx context.Context) (*protos.GetInventoryRespons
 	inventory := &protos.GetInventoryResponse{}
 	err = proto.Unmarshal(response.Returns[0], inventory)
 	if err != nil {
-		return nil, &ResponseError{err}
+		return nil, &ErrResponse{err}
 	}
 	s.feed.Push(inventory)
 	s.debugProtoMessage("response return[0]", inventory)

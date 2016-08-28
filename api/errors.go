@@ -1,72 +1,49 @@
 package api
 
 import (
+	"errors"
 	"fmt"
+
+	protos "github.com/pogodevorg/pogo-protos"
 )
 
-const (
-	successfulStatus            int32 = 1
-	requiresAuthorizationStatus int32 = 2
-	requiresRPCEndpointStatus   int32 = 53
-	sessionTokenInvalidStatus   int32 = 102
-)
+// ErrFormatting happens when the something in the request body was not right
+var ErrFormatting = errors.New("Request was malformatted and could not be performed")
+
+
+// ErrRequest happens when there is an unknown issue with the request
+var ErrRequest = errors.New("The request could not be completed")
+
+// ErrNewRPCURL happens when there is a new RPC url available in the response body
+var ErrNewRPCURL = errors.New("The request could not be completed")
+
+// ErrInvalidAuthToken happens when the currently used auth token is not vailid
+var ErrInvalidAuthToken = errors.New("The auth token used is not vailid")
+
+// ErrRedirect happens when an invalid session endpoint has been used
+var ErrRedirect = errors.New("The request was redirected")
 
 // GetErrorFromStatus will, depending on the status code, give you an error or nil if there is no error
-func GetErrorFromStatus(status int32) error {
+func GetErrorFromStatus(status protos.ResponseEnvelope_StatusCode) error {
 	switch status {
-	case successfulStatus:
+	case protos.ResponseEnvelope_OK:
 		return nil
-	case requiresAuthorizationStatus:
-		return &RequiresAuthorizationError{}
-	case requiresRPCEndpointStatus:
-		return &RequiresRPCEndpointError{}
-	case sessionTokenInvalidStatus:
-		return &InvalidSessionError{}
+	case protos.ResponseEnvelope_OK_RPC_URL_IN_RESPONSE:
+		return ErrNewRPCURL
+	case protos.ResponseEnvelope_REDIRECT:
+		return ErrRedirect
+	case protos.ResponseEnvelope_INVALID_AUTH_TOKEN:
+		return ErrInvalidAuthToken
 	default:
-		return &RequestError{}
+		return ErrRequest
 	}
 }
 
-// RequestError happens when there's an error that is not accounted for
-type RequestError struct{}
-
-func (e *RequestError) Error() string {
-	return "The request could not be completed"
-}
-
-// RequiresAuthorizationError happens when the API wants you to re-authorize the profile
-type RequiresAuthorizationError struct{}
-
-func (e *RequiresAuthorizationError) Error() string {
-	return "The profile needs to be authorized"
-}
-
-// RequiresRPCEndpointError happens when an invalid session endpoint has been used
-type RequiresRPCEndpointError struct{}
-
-func (e *RequiresRPCEndpointError) Error() string {
-	return "The request needs to be to a valid RPC endpoint"
-}
-
-// InvalidSessionError happens when the session token has expired or been invalidated
-type InvalidSessionError struct{}
-
-func (e *InvalidSessionError) Error() string {
-	return "The session token is invalid"
-}
-
-// FormattingError happens when the something in the request body was not right
-type FormattingError struct{}
-
-func (e *FormattingError) Error() string {
-	return "Request was malformatted and could not be performed"
-}
-
-// ResponseError happens when there's something wrong with the response object
-type ResponseError struct {
+// ErrResponse happens when there's something wrong with the response object
+type ErrResponse struct {
 	err error
 }
 
-func (e *ResponseError) Error() string {
+func (e *ErrResponse) Error() string {
 	return fmt.Sprintf("The response could not be read: %s", e.err.Error())
 }
