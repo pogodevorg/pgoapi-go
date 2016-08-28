@@ -34,6 +34,9 @@ var ErrRedirect = errors.New("The request was redirected")
 // ErrRequest happens when there is an unknown issue with the request
 var ErrRequest = errors.New("The remote service responded but the request could not be completed for unknown reasons")
 
+// ErrNoURL happens when the remote service is expected to respond with a remote URL but doesn't
+var ErrNoURL = errors.New("The remote service did not respond with a remote URL when expected")
+
 // GetErrorFromStatus will, depending on the status code, give you an error or nil if there is no error
 func GetErrorFromStatus(status protos.ResponseEnvelope_StatusCode) error {
 	switch status {

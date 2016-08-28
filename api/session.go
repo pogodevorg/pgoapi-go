@@ -221,7 +221,7 @@ func (s *Session) Init(ctx context.Context) error {
 
 	url := response.ApiUrl
 	if url == "" {
-		return fmt.Errorf("Could not initialize session, the service might be down")
+		return ErrNoURL
 	}
 	s.setURL(url)
 
