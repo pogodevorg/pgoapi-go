@@ -22,42 +22,42 @@ func Run(crypto api.Crypto, args []string) {
 		cli.BoolFlag{
 			Name:        "debug,d",
 			Destination: &w.debug,
-			EnvVar:      "POGO_DEBUG",
+			EnvVar:      "PGOAPI_DEBUG",
 		},
 		cli.StringFlag{
 			Name:        "username,u",
 			Destination: &w.username,
-			EnvVar:      "POGO_ACCOUNT_USERNAME",
+			EnvVar:      "PGOAPI_ACCOUNT_USERNAME",
 		},
 		cli.StringFlag{
 			Name:        "password,p",
 			Destination: &w.password,
-			EnvVar:      "POGO_ACCOUNT_PASSWORD",
+			EnvVar:      "PGOAPI_ACCOUNT_PASSWORD",
 		},
 		cli.StringFlag{
 			Name:        "provider",
 			Destination: &w.provider,
 			Value:       "ptc",
 			Usage:       "Your account provider can be either \"ptc\" or \"google\"",
-			EnvVar:      "POGO_ACCOUNT_PROVIDER",
+			EnvVar:      "PGOAPI_ACCOUNT_PROVIDER",
 		},
 		cli.Float64Flag{
 			Name:        "latitude,lat",
 			Destination: &w.lat,
 			Value:       0.0,
-			EnvVar:      "POGO_DEFAULT_LATITUDE",
+			EnvVar:      "PGOAPI_DEFAULT_LATITUDE",
 		},
 		cli.Float64Flag{
 			Name:        "longitude,lon",
 			Destination: &w.lon,
 			Value:       0.0,
-			EnvVar:      "POGO_DEFAULT_LONGITUDE",
+			EnvVar:      "PGOAPI_DEFAULT_LONGITUDE",
 		},
 		cli.Float64Flag{
 			Name:        "altitude,alt",
 			Destination: &w.alt,
 			Value:       0.0,
-			EnvVar:      "POGO_DEFAULT_ALTITUDE",
+			EnvVar:      "PGOAPI_DEFAULT_ALTITUDE",
 		},
 	}
 	app.Commands = []cli.Command{

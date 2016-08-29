@@ -126,8 +126,8 @@ $ pogo -u <username> -p <Secret1234> --lat 0.0 --lon 0.0 player
 #### Configure through environment variables
 
 ```bash
-export POGO_ACCOUNT_USERNAME=MyUserAccount
-export POGO_ACCOUNT_USERNAME=PasswordThatIsSecret
+export PGOAPI_ACCOUNT_USERNAME=MyUserAccount
+export PGOAPI_ACCOUNT_PASSWORD=PasswordThatIsSecret
 $ pogo --lat 0.0 --lon 0.0 player
 ```
 
