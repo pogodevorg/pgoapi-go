@@ -1,4 +1,4 @@
-# pogo
+# pgoapi-go
 Pokémon Go API tools written in Golang
 
 [![Build Status](https://travis-ci.org/pogodevorg/pgoapi-go.svg?branch=master)](https://travis-ci.org/pogodevorg/pgoapi-go)
@@ -120,7 +120,7 @@ $ go get -u github.com/pogodevorg/pgoapi-go
 #### Get player profile
 
 ```bash
-$ pogo -u <username> -p <Secret1234> --lat 0.0 --lon 0.0 player
+$ pgoapi-go -u <username> -p <Secret1234> --lat 0.0 --lon 0.0 player
 ```
 
 #### Configure through environment variables
@@ -128,7 +128,7 @@ $ pogo -u <username> -p <Secret1234> --lat 0.0 --lon 0.0 player
 ```bash
 export PGOAPI_ACCOUNT_USERNAME=MyUserAccount
 export PGOAPI_ACCOUNT_PASSWORD=PasswordThatIsSecret
-$ pogo --lat 0.0 --lon 0.0 player
+$ pgoapi-go --lat 0.0 --lon 0.0 player
 ```
 
 ## Credit
