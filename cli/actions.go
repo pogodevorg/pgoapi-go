@@ -8,8 +8,8 @@ import (
 
 	"github.com/urfave/cli"
 
-	"github.com/pogodevorg/pogo/api"
-	"github.com/pogodevorg/pogo/auth"
+	"github.com/pogodevorg/pgoapi-go/api"
+	"github.com/pogodevorg/pgoapi-go/auth"
 )
 
 func fail(e error) *cli.ExitError {

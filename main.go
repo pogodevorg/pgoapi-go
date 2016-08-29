@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/pogodevorg/pogo/api"
-	"github.com/pogodevorg/pogo/cli"
+	"github.com/pogodevorg/pgoapi-go/api"
+	"github.com/pogodevorg/pgoapi-go/cli"
 )
 
 func main() {

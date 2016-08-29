@@ -4,8 +4,8 @@ import (
 	"github.com/urfave/cli"
 	"golang.org/x/net/context"
 
-	"github.com/pogodevorg/pogo/api"
-	"github.com/pogodevorg/pogo/auth"
+	"github.com/pogodevorg/pgoapi-go/api"
+	"github.com/pogodevorg/pgoapi-go/auth"
 )
 
 type wrapper struct {

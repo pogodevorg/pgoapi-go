@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	protos "github.com/pogodevorg/pogo-protos"
+	protos "github.com/pogodevorg/POGOProtos-go"
 )
 
 // ErrFormatting happens when the something in the request body was not right

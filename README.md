@@ -1,9 +1,9 @@
 # pogo
 Pokémon Go API tools written in Golang
 
-[![Build Status](https://travis-ci.org/pogodevorg/pogo.svg?branch=master)](https://travis-ci.org/pogodevorg/pogo)
+[![Build Status](https://travis-ci.org/pogodevorg/pgoapi-go.svg?branch=master)](https://travis-ci.org/pogodevorg/pgoapi-go)
 
-Source at: https://github.com/pogodevorg/pogo
+Source at: https://github.com/pogodevorg/pgoapi-go
 
 ## Library
 You can include this package as a library in your own project.
@@ -20,8 +20,8 @@ import (
 
   "golang.org/x/net/context"
 
-  "github.com/pogodevorg/pogo/api"
-  "github.com/pogodevorg/pogo/auth"
+  "github.com/pogodevorg/pgoapi-go/api"
+  "github.com/pogodevorg/pgoapi-go/auth"
 )
 
 func main() {
@@ -112,7 +112,7 @@ func (f *DebugFeed) Push(entry interface{}) {
 Make sure you're running the latest version of Go, then simply install through `go get`.
 
 ```bash
-$ go get -u github.com/pogodevorg/pogo
+$ go get -u github.com/pogodevorg/pgoapi-go
 ```
 
 ### Usage

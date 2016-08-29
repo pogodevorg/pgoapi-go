@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"github.com/pogodevorg/pogo/api"
+	"github.com/pogodevorg/pgoapi-go/api"
 	"github.com/urfave/cli"
 )
 
