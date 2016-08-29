@@ -16,9 +16,16 @@ func fail(e error) *cli.ExitError {
 	return cli.NewExitError(e.Error(), 1)
 }
 
+func isFailure(e error) bool {
+	if e != nil {
+		return (e != api.ErrNewRPCURL)
+	}
+	return false
+}
+
 func getAccessToken(ctx context.Context, session *api.Session, provider auth.Provider) error {
 	token, err := provider.Login(ctx)
-	if err != nil {
+	if isFailure(err) {
 		return fail(err)
 	}
 	fmt.Println(token)
@@ -27,15 +34,15 @@ func getAccessToken(ctx context.Context, session *api.Session, provider auth.Pro
 
 func getPlayer(ctx context.Context, session *api.Session, provider auth.Provider) error {
 	err := session.Init(ctx)
-	if err != nil {
+	if isFailure(err) {
 		return fail(err)
 	}
 	profile, err := session.GetPlayer(ctx)
-	if err != nil {
+	if isFailure(err) {
 		return fail(err)
 	}
 	out, err := json.Marshal(profile)
-	if err != nil {
+	if isFailure(err) {
 		return fail(err)
 	}
 
@@ -45,15 +52,15 @@ func getPlayer(ctx context.Context, session *api.Session, provider auth.Provider
 
 func getInventory(ctx context.Context, session *api.Session, provider auth.Provider) error {
 	err := session.Init(ctx)
-	if err != nil {
+	if isFailure(err) {
 		return fail(err)
 	}
 	inventory, err := session.GetInventory(ctx)
-	if err != nil {
+	if isFailure(err) {
 		return fail(err)
 	}
 	out, err := json.Marshal(inventory)
-	if err != nil {
+	if isFailure(err) {
 		return fail(err)
 	}
 
@@ -63,15 +70,15 @@ func getInventory(ctx context.Context, session *api.Session, provider auth.Provi
 
 func getMap(ctx context.Context, session *api.Session, provider auth.Provider) error {
 	err := session.Init(ctx)
-	if err != nil {
+	if isFailure(err) {
 		return fail(err)
 	}
 	mapObjects, err := session.GetPlayerMap(ctx)
-	if err != nil {
+	if isFailure(err) {
 		return fail(err)
 	}
 	out, err := json.Marshal(mapObjects)
-	if err != nil {
+	if isFailure(err) {
 		return fail(err)
 	}
 
