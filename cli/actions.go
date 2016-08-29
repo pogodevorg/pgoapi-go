@@ -18,7 +18,12 @@ func fail(e error) *cli.ExitError {
 
 func isFailure(e error) bool {
 	if e != nil {
-		return (e != api.ErrNewRPCURL)
+		switch e {
+		case api.ErrNewRPCURL:
+			return false
+		default:
+			return true
+		}
 	}
 	return false
 }
