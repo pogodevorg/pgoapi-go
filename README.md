@@ -17,8 +17,7 @@ package main
 import (
   "encoding/json"
   "fmt"
-
-  "golang.org/x/net/context"
+  "context"
 
   "github.com/pogodevorg/pgoapi-go/api"
   "github.com/pogodevorg/pgoapi-go/auth"
@@ -27,7 +26,7 @@ import (
 func main() {
 
   // Unless you already have another net/context complient context, use this empty context.
-  // Read more about context at: https://godoc.org/golang.org/x/net/context
+  // Read more about context at: https://godoc.org/context
   ctx := context.Background()
 
   // Initialize a new authentication provider to retrieve an access token

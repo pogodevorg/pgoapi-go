@@ -2,6 +2,8 @@ package api
 
 import (
 	"bytes"
+	"context"
+	"context/ctxhttp"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -9,8 +11,6 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	protos "github.com/pogodevorg/POGOProtos-go"
-	"golang.org/x/net/context"
-	"golang.org/x/net/context/ctxhttp"
 )
 
 const rpcUserAgent = "Niantic App"

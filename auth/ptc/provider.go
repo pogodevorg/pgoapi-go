@@ -1,6 +1,8 @@
 package ptc
 
 import (
+	"context"
+	"context/ctxhttp"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -8,9 +10,6 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"strings"
-
-	"golang.org/x/net/context"
-	"golang.org/x/net/context/ctxhttp"
 )
 
 const authorizeURL = "https://sso.pokemon.com/sso/oauth2.0/accessToken"

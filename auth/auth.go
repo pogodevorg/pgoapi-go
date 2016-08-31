@@ -1,10 +1,9 @@
 package auth
 
 import (
+	"context"
 	"errors"
 	"fmt"
-
-	"golang.org/x/net/context"
 
 	"github.com/pogodevorg/pgoapi-go/auth/google"
 	"github.com/pogodevorg/pgoapi-go/auth/ptc"

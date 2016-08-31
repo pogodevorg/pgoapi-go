@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"crypto/rand"
 	"fmt"
 	"log"
@@ -8,7 +9,6 @@ import (
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
-	"golang.org/x/net/context"
 
 	protos "github.com/pogodevorg/POGOProtos-go"
 	"github.com/pogodevorg/pgoapi-go/auth"

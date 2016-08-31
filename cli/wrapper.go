@@ -1,8 +1,9 @@
 package cli
 
 import (
+	"context"
+
 	"github.com/urfave/cli"
-	"golang.org/x/net/context"
 
 	"github.com/pogodevorg/pgoapi-go/api"
 	"github.com/pogodevorg/pgoapi-go/auth"

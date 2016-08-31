@@ -1,10 +1,9 @@
 package cli
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-
-	"golang.org/x/net/context"
 
 	"github.com/urfave/cli"
 
