@@ -5,6 +5,9 @@ Pokémon Go API tools written in Golang
 
 Source at: https://github.com/pogodevorg/pgoapi-go
 
+## Dependencies
+Only supports Go `1.7`
+
 ## Library
 You can include this package as a library in your own project.
 
