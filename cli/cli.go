@@ -59,6 +59,12 @@ func Run(crypto api.Crypto, args []string) {
 			Value:       0.0,
 			EnvVar:      "PGOAPI_DEFAULT_ALTITUDE",
 		},
+		cli.Float64Flag{
+			Name:        "accuracy,acc",
+			Destination: &w.accuracy,
+			Value:       3.0,
+			EnvVar:      "PGOAPI_DEFAULT_ACCURACY",
+		},
 	}
 	app.Commands = []cli.Command{
 		{

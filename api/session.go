@@ -101,7 +101,7 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 		Longitude: s.location.Lon,
 		Latitude:  s.location.Lat,
 
-		Accuracy: float64(0),
+		Accuracy: s.location.Accuracy,
 
 		Requests: requests,
 	}

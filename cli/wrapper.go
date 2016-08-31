@@ -14,9 +14,10 @@ type wrapper struct {
 	username string
 	password string
 
-	lat float64
-	lon float64
-	alt float64
+	lat      float64
+	lon      float64
+	alt      float64
+	accuracy float64
 
 	debug  bool
 	crypto api.Crypto
@@ -33,9 +34,10 @@ func (w *wrapper) wrap(action func(context.Context, *api.Session, auth.Provider)
 		}
 
 		location := &api.Location{
-			Lon: w.lon,
-			Lat: w.lat,
-			Alt: w.alt,
+			Lon:      w.lon,
+			Lat:      w.lat,
+			Alt:      w.alt,
+			Accuracy: accuracy,
 		}
 
 		client := api.NewSession(provider, location, &api.VoidFeed{}, w.crypto, w.debug)

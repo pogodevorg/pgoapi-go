@@ -20,9 +20,10 @@ func (a CellIDs) Less(i, j int) bool { return a[i] < a[j] }
 
 // Location consists of coordinates in longitude, latitude and altitude
 type Location struct {
-	Lon float64
-	Lat float64
-	Alt float64
+	Lon      float64
+	Lat      float64
+	Alt      float64
+	Accuracy float64
 }
 
 // GetCellIDs will return a slice of the closed neighbourhood cell ids for the current coordinates
@@ -62,6 +63,6 @@ func (l *Location) GetBytes() []byte {
 	b := make([]byte, 24)
 	binary.BigEndian.PutUint64(b[0:8], math.Float64bits(l.Lat))
 	binary.BigEndian.PutUint64(b[8:16], math.Float64bits(l.Lon))
-	binary.BigEndian.PutUint64(b[16:24], math.Float64bits(l.Alt))
+	binary.BigEndian.PutUint64(b[16:24], math.Float64bits(l.Accuracy))
 	return b[:24]
 }
