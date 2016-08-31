@@ -31,6 +31,7 @@ type Session struct {
 	ticket    *protos.AuthTicket
 	started   time.Time
 	provider  auth.Provider
+	hash      []byte
 }
 
 func generateRequests() []*protos.Request {
@@ -53,6 +54,7 @@ func NewSession(provider auth.Provider, location *Location, feed Feed, crypto Cr
 		crypto:    crypto,
 		started:   time.Now(),
 		hasTicket: false,
+		hash:      make([]byte, 32),
 	}
 }
 
@@ -139,17 +141,11 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 			return nil, err
 		}
 
-		sessionHash := make([]byte, 32)
-		_, err = rand.Read(sessionHash)
-		if err != nil {
-			return nil, ErrFormatting
-		}
-
 		signature := &protos.Signature{
 			RequestHash:         requestHash,
 			LocationHash1:       locationHash1,
 			LocationHash2:       locationHash2,
-			SessionHash:         sessionHash,
+			SessionHash:         s.hash,
 			Timestamp:           t,
 			TimestampSinceStart: (t - getTimestamp(s.started)),
 		}
@@ -203,9 +199,15 @@ func (s *Session) Init(ctx context.Context) error {
 		return err
 	}
 
+	_, err = rand.Read(s.hash)
+	if err != nil {
+		return ErrFormatting
+	}
+
 	settingsMessage, _ := proto.Marshal(&protos.DownloadSettingsMessage{
 		Hash: downloadSettingsHash,
 	})
+
 	requests := []*protos.Request{
 		{RequestType: protos.RequestType_GET_PLAYER},
 		{RequestType: protos.RequestType_GET_HATCHED_EGGS},
