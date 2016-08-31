@@ -3,13 +3,14 @@ package api
 import (
 	"bytes"
 	"context"
-	"context/ctxhttp"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
 
 	"github.com/golang/protobuf/proto"
+	"golang.org/x/net/context/ctxhttp"
+
 	protos "github.com/pogodevorg/POGOProtos-go"
 )
 
