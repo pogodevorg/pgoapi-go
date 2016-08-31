@@ -37,7 +37,7 @@ func (w *wrapper) wrap(action func(context.Context, *api.Session, auth.Provider)
 			Lon:      w.lon,
 			Lat:      w.lat,
 			Alt:      w.alt,
-			Accuracy: accuracy,
+			Accuracy: w.accuracy,
 		}
 
 		client := api.NewSession(provider, location, &api.VoidFeed{}, w.crypto, w.debug)
