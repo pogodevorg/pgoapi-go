@@ -41,6 +41,7 @@ func main() {
     Lon: 0.0,
     Lat: 0.0,
     Alt: 0.0,
+    Accuracy: 3.0,
   }
 
   // Set up a feed to where all the responses will be pushed
