@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/OneOfOne/xxhash"
+	"github.com/OneOfOne/xxhash/native"
 	"github.com/golang/protobuf/proto"
 	protos "github.com/pogodevorg/POGOProtos-go"
 )
