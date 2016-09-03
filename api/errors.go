@@ -37,6 +37,9 @@ var ErrRequest = errors.New("The remote service responded but the request could 
 // ErrNoURL happens when the remote service is expected to respond with a remote URL but doesn't
 var ErrNoURL = errors.New("The remote service did not respond with a remote URL when expected")
 
+// ErrNoMapObjectsResponse happens when session.Announce is missing the map objects response
+var ErrNoMapObjectsResponse = errors.New("The map objects response is missing")
+
 // GetErrorFromStatus will, depending on the status code, give you an error or nil if there is no error
 func GetErrorFromStatus(status protos.ResponseEnvelope_StatusCode) error {
 	switch status {

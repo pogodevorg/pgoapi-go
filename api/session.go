@@ -272,6 +272,10 @@ func (s *Session) Announce(ctx context.Context) (mapObjects *protos.GetMapObject
 		return mapObjects, ErrRequest
 	}
 
+	if len(response.Returns) != 6 {
+		return nil, ErrNoMapObjectsResponse
+	}
+
 	mapObjects = &protos.GetMapObjectsResponse{}
 	err = proto.Unmarshal(response.Returns[5], mapObjects)
 	if err != nil {
