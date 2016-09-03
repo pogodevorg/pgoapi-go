@@ -324,3 +324,12 @@ func (s *Session) GetInventory(ctx context.Context) (*protos.GetInventoryRespons
 
 	return inventory, GetErrorFromStatus(response.StatusCode)
 }
+
+// GetExpireTimeStampMs returns the expiration timestamp in milliseconds of the session. Returns 0 if session has not been initialised.
+func (s *Session) GetExpireTimeStampMs() uint64 {
+	if s.hasTicket {
+		return s.ticket.ExpireTimestampMs
+	}
+
+	return 0
+}
