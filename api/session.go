@@ -272,6 +272,10 @@ func (s *Session) Announce(ctx context.Context) (mapObjects *protos.GetMapObject
 		return mapObjects, ErrRequest
 	}
 
+	if len(response.Returns) != 6 {
+		return nil, ErrNoMapObjectsResponse
+	}
+
 	mapObjects = &protos.GetMapObjectsResponse{}
 	err = proto.Unmarshal(response.Returns[5], mapObjects)
 	if err != nil {
@@ -323,4 +327,13 @@ func (s *Session) GetInventory(ctx context.Context) (*protos.GetInventoryRespons
 	s.debugProtoMessage("response return[0]", inventory)
 
 	return inventory, GetErrorFromStatus(response.StatusCode)
+}
+
+// GetExpireTimeStampMs returns the expiration timestamp in milliseconds of the session. Returns 0 if session has not been initialised.
+func (s *Session) GetExpireTimeStampMs() uint64 {
+	if s.hasTicket {
+		return s.ticket.ExpireTimestampMs
+	}
+
+	return 0
 }
