@@ -58,6 +58,16 @@ func NewSession(provider auth.Provider, location *Location, feed Feed, crypto Cr
 	}
 }
 
+// IsExpired checks the expiration timestamp of the sessions AuthTicket
+// if the session has a ticket and it is still valid, the return value is false
+// if there is no ticket, or the ticket is expired, the return value is true
+func (s *Session) IsExpired() bool {
+	if !s.hasTicket {
+		return true
+	}
+	return s.ticket.ExpireTimestampMs > getTimestamp(time.Now())
+}
+
 // SetTimeout sets the client timeout for the RPC API
 func (s *Session) SetTimeout(d time.Duration) {
 	s.rpc.http.Timeout = d
