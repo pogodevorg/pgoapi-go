@@ -65,7 +65,7 @@ func (s *Session) IsExpired() bool {
 	if !s.hasTicket {
 		return true
 	}
-	return s.ticket.ExpireTimestampMs > getTimestamp(time.Now())
+	return s.ticket.ExpireTimestampMs < getTimestamp(time.Now())
 }
 
 // SetTimeout sets the client timeout for the RPC API
