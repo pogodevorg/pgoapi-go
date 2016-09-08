@@ -12,6 +12,7 @@ import (
 
 	protos "github.com/pogodevorg/POGOProtos-go"
 	"github.com/pogodevorg/pgoapi-go/auth"
+	"errors"
 )
 
 const defaultURL = "https://pgorelease.nianticlabs.com/plfe/rpc"
@@ -56,6 +57,16 @@ func NewSession(provider auth.Provider, location *Location, feed Feed, crypto Cr
 		hasTicket: false,
 		hash:      make([]byte, 32),
 	}
+}
+
+// IsExpired checks the expiration timestamp of the sessions AuthTicket
+// if the session has a ticket and it is still valid, the return value is false
+// if there is no ticket, or the ticket is expired, the return value is true
+func (s *Session) IsExpired() bool {
+	if !s.hasTicket {
+		return true
+	}
+	return s.ticket.ExpireTimestampMs < getTimestamp(time.Now())
 }
 
 // SetTimeout sets the client timeout for the RPC API
@@ -273,6 +284,9 @@ func (s *Session) Announce(ctx context.Context) (mapObjects *protos.GetMapObject
 	}
 
 	mapObjects = &protos.GetMapObjectsResponse{}
+	if(len(response.Returns) < 5) {
+		return nil, errors.New("Empty response")
+	}
 	err = proto.Unmarshal(response.Returns[5], mapObjects)
 	if err != nil {
 		return nil, &ErrResponse{err}
