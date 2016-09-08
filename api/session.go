@@ -12,6 +12,7 @@ import (
 
 	protos "github.com/pogodevorg/POGOProtos-go"
 	"github.com/pogodevorg/pgoapi-go/auth"
+	"errors"
 )
 
 const defaultURL = "https://pgorelease.nianticlabs.com/plfe/rpc"
@@ -283,6 +284,9 @@ func (s *Session) Announce(ctx context.Context) (mapObjects *protos.GetMapObject
 	}
 
 	mapObjects = &protos.GetMapObjectsResponse{}
+	if(len(response.Returns) < 5) {
+		return nil, errors.New("Empty response")
+	}
 	err = proto.Unmarshal(response.Returns[5], mapObjects)
 	if err != nil {
 		return nil, &ErrResponse{err}
