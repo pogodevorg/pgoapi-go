@@ -51,6 +51,11 @@ func (p *Provider) GetAccessToken() string {
 	return p.ticket
 }
 
+// SetAccessToken will set a token (by AP) if it was previously got by API user.
+func (p *Provider) SetAccessToken(ticket string) {
+	p.ticket = ticket
+}
+
 // Login retrieves an access token from the Pokémon Trainer's Club
 func (p *Provider) Login(ctx context.Context) (string, error) {
 	sig, err := signature(p.username, p.password)

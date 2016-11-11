@@ -194,9 +194,17 @@ func (s *Session) MoveTo(location *Location) {
 
 // Init initializes the client by performing full authentication
 func (s *Session) Init(ctx context.Context) error {
-	_, err := s.provider.Login(ctx)
-	if err != nil {
-		return err
+
+	var err error;
+
+  switch (s.hasTicket) {
+	case false:
+		_, err = s.provider.Login(ctx)
+		if err != nil {
+			return err
+		}
+	default:
+		break;
 	}
 
 	_, err = rand.Read(s.hash)
