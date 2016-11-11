@@ -1,16 +1,11 @@
 package cli
 
-import (
-	"github.com/pogodevorg/pgoapi-go/api"
-	"github.com/urfave/cli"
-)
+import "github.com/urfave/cli"
 
 // Run interprets arguments and performs actions
-func Run(crypto api.Crypto, args []string) {
+func Run(args []string) {
 
-	w := wrapper{
-		crypto: crypto,
-	}
+	w := wrapper{}
 
 	app := cli.NewApp()
 	app.Name = "pgoapi-go"
