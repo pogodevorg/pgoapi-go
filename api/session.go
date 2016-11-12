@@ -196,8 +196,9 @@ func (s *Session) MoveTo(location *Location) {
 func (s *Session) Init(ctx context.Context) error {
 
 	var err error;
+	tokenExists := s.provider.AccessTokenExists()
 
-  switch (s.hasTicket) {
+  switch tokenExists {
 	case false:
 		_, err = s.provider.Login(ctx)
 		if err != nil {

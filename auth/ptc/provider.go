@@ -34,6 +34,7 @@ type Provider struct {
 	password string
 	ticket   string
 	http     *http.Client
+	hasToken bool
 }
 
 // NewProvider constructs a Pokémon Trainer's Club auth provider instance
@@ -51,6 +52,7 @@ func NewProvider(username, password string) *Provider {
 		http:     httpClient,
 		username: username,
 		password: password,
+		hasToken: false,
 	}
 }
 
@@ -65,8 +67,15 @@ func (p *Provider) GetAccessToken() string {
 }
 
 // SetAccessToken will set a token (by AP) if it was previously got by API user.
-func (p *Provider) SetAccessToken(ticket string) {
+func (p *Provider) SetAccessToken(ticket string) (error) {
+	p.hasToken = true
 	p.ticket = ticket
+	return nil
+}
+
+// A way to check if Token exists.
+func (p *Provider) AccessTokenExists() bool {
+	return p.hasToken
 }
 
 // Login retrieves an access token from the Pokémon Trainer's Club
