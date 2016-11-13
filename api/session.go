@@ -12,7 +12,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	protos "github.com/pogodevorg/POGOProtos-go"
 	"github.com/pogodevorg/pgoapi-go/auth"
-	"gitlab.com/pidgeyfinder/pokecrypt"
+	"gopkg.in/pokelibs/go-pokelib.v43"
 )
 
 const defaultURL = "https://pgorelease.nianticlabs.com/plfe/rpc"
@@ -127,11 +127,11 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 			if err != nil {
 				return nil, err
 			}
-			requestHash[idx] = pokecrypt.HashRequest(ticket, req)
+			requestHash[idx] = pokelib.HashRequest(ticket, req)
 		}
 
-		locationHash1 := pokecrypt.HashLoaction1(ticket, s.location.Lat, s.location.Lon, s.location.Alt)
-		locationHash2 := pokecrypt.HashLocation2(s.location.Lat, s.location.Lon, s.location.Alt)
+		locationHash1 := pokelib.HashLocation1(ticket, s.location.Lat, s.location.Lon, s.location.Alt)
+		locationHash2 := pokelib.HashLocation2(s.location.Lat, s.location.Lon, s.location.Alt)
 
 		signature := &protos.Signature{
 			RequestHash:   requestHash,
@@ -153,7 +153,7 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 			SessionHash:         s.hash,
 			Timestamp:           t,
 			TimestampSinceStart: (t - getTimestamp(s.started)),
-			Unknown25:           pokecrypt.Hash25(),
+			Unknown25:           pokelib.Hash25(),
 		}
 
 		signatureProto, err := proto.Marshal(signature)
@@ -162,7 +162,7 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 		}
 
 		requestMessage, err := proto.Marshal(&protos.SendEncryptedSignatureRequest{
-			EncryptedSignature: pokecrypt.Encrypt(signatureProto, uint32(signature.TimestampSinceStart)),
+			EncryptedSignature: pokelib.Encrypt(signatureProto, uint32(signature.TimestampSinceStart)),
 		})
 		if err != nil {
 			return nil, ErrFormatting
