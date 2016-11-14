@@ -39,7 +39,7 @@ func (w *wrapper) wrap(action func(context.Context, *api.Session, auth.Provider)
 			Accuracy: w.accuracy,
 		}
 
-		client := api.NewSession(provider, location, &api.VoidFeed{}, w.debug)
+		client := api.NewSession(provider, location, &api.VoidFeed{}, nil, w.debug)
 
 		return action(ctx, client, provider)
 	}
