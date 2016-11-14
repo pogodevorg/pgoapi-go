@@ -29,6 +29,7 @@ type Provider struct {
 	password string
 	ticket   string
 	http     *http.Client
+	hasToken bool
 }
 
 // NewProvider constructs a Google auth provider instance
@@ -38,6 +39,7 @@ func NewProvider(username, password string) *Provider {
 		http:     http.DefaultClient,
 		username: username,
 		password: password,
+		hasToken: false,
 	}
 }
 
@@ -49,6 +51,18 @@ func (p *Provider) GetProviderString() string {
 // GetAccessToken will return an access token if it has been retrieved
 func (p *Provider) GetAccessToken() string {
 	return p.ticket
+}
+
+// SetAccessToken will set a token (by AP) if it was previously got by API user.
+func (p *Provider) SetAccessToken(ticket string) (error) {
+	p.hasToken = true
+	p.ticket = ticket
+	return nil
+}
+
+// A way to check if Token exists.
+func (p *Provider) AccessTokenExists() bool {
+	return p.hasToken
 }
 
 // Login retrieves an access token from the Pokémon Trainer's Club

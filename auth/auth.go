@@ -14,6 +14,8 @@ type Provider interface {
 	Login(context.Context) (authToken string, err error)
 	GetProviderString() string
 	GetAccessToken() string
+	SetAccessToken(token string) error
+	AccessTokenExists() bool
 }
 
 // UnknownProvider is a null provider for when a real one cannot be retrieved
@@ -33,6 +35,16 @@ func (u *UnknownProvider) GetProviderString() string {
 // GetAccessToken will return an empty access token
 func (u *UnknownProvider) GetAccessToken() string {
 	return ""
+}
+
+// SetAccessToken returns an error
+func (u *UnknownProvider) SetAccessToken(token string) (error) {
+	return errors.New("Cannot set access token to an unknown provider")
+}
+
+// AccessTokenExists returns false
+func (u *UnknownProvider) AccessTokenExists() bool {
+	return false
 }
 
 // NewProvider creates a new provider based on the provider identifier

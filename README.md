@@ -28,7 +28,7 @@ import (
 
 func main() {
 
-  // Unless you already have another net/context complient context, use this empty context.
+  // Unless you already have another net/context compliant context, use this empty context.
   // Read more about context at: https://godoc.org/context
   ctx := context.Background()
 
@@ -38,6 +38,10 @@ func main() {
     fmt.Println(err)
     return
   }
+
+  // If you have previously retrieved a token, you can also set token.
+
+  provider.SetAccessToken("cafedecafbeefface");
 
   // Set the coordinates from where you're connecting
   location := &api.Location{
@@ -51,14 +55,12 @@ func main() {
   // The void feed will do nothing with the response entries
   feed := &api.VoidFeed{}
 
-  // Set up the type of crypto to use for signing requests
-  //
-  // For most intents and purposes, you should be fine with
-  // using the Default crypto.
-  crypto := &api.DefaultCrypto{}
+  // Passing crypto is not needed anymore.
 
   // Start new session and connect
-  session := api.NewSession(provider, location, feed, crypto, false)
+  session := api.NewSession(provider, location, feed, false)
+
+  // (If you have previously set a token, Init will not log you in but instead do request using that token.)
   err = session.Init(ctx)
   if err != nil {
     fmt.Println(err)
@@ -136,4 +138,4 @@ $ pgoapi-go --lat 0.0 --lon 0.0 player
 
 ## Credit
 - Thanks to https://github.com/tejado/pgoapi for inspiration about implementation details.
-- Thanks to https://github.com/AeonLucid/POGOProtos for maintaing and constantly improving a Pokémon Go API protobuf specification.
+- Thanks to https://github.com/AeonLucid/POGOProtos for maintaining and constantly improving a Pokémon Go API Protobuf specification.
