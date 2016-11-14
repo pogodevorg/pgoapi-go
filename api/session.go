@@ -32,6 +32,8 @@ type Session struct {
 	started   time.Time
 	provider  auth.Provider
 	hash      []byte
+
+	deviceInfo *protos.Signature_DeviceInfo
 }
 
 func generateRequests() []*protos.Request {
@@ -43,7 +45,20 @@ func getTimestamp(t time.Time) uint64 {
 }
 
 // NewSession constructs a Pokémon Go RPC API client
-func NewSession(provider auth.Provider, location *Location, feed Feed, debug bool) *Session {
+func NewSession(provider auth.Provider, location *Location, feed Feed, deviceInfo *protos.Signature_DeviceInfo, debug bool) *Session {
+	if deviceInfo == nil{
+		// Default deviceInfo
+		deviceInfo = &protos.Signature_DeviceInfo{
+			DeviceId:             "<device_id>",
+			DeviceBrand:          "Apple",
+			DeviceModel:          "iPhone",
+			DeviceModelBoot:      "Iphone7,2",
+			HardwareManufacturer: "Apple",
+			HardwareModel:        "N66AP",
+			FirmwareBrand:        "iPhone OS",
+			FirmwareType:         "9.3.3",
+		}
+	}
 	return &Session{
 		location:  location,
 		rpc:       NewRPC(),
@@ -54,6 +69,7 @@ func NewSession(provider auth.Provider, location *Location, feed Feed, debug boo
 		started:   time.Now(),
 		hasTicket: false,
 		hash:      make([]byte, 32),
+		deviceInfo:deviceInfo,
 	}
 }
 
@@ -140,16 +156,7 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 			ActivityStatus: &protos.Signature_ActivityStatus{
 				Stationary: true,
 			},
-			DeviceInfo: &protos.Signature_DeviceInfo{
-				DeviceId:             "<device_id>",
-				DeviceBrand:          "Apple",
-				DeviceModel:          "iPhone",
-				DeviceModelBoot:      "Iphone7,2",
-				HardwareManufacturer: "Apple",
-				HardwareModel:        "N66AP",
-				FirmwareBrand:        "iPhone OS",
-				FirmwareType:         "9.3.3",
-			},
+			DeviceInfo: s.deviceInfo,
 			SessionHash:         s.hash,
 			Timestamp:           t,
 			TimestampSinceStart: (t - getTimestamp(s.started)),
