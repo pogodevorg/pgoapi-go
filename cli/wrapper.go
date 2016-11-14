@@ -19,8 +19,7 @@ type wrapper struct {
 	alt      float64
 	accuracy float64
 
-	debug  bool
-	crypto api.Crypto
+	debug bool
 }
 
 func (w *wrapper) wrap(action func(context.Context, *api.Session, auth.Provider) error) func(*cli.Context) error {
@@ -40,7 +39,7 @@ func (w *wrapper) wrap(action func(context.Context, *api.Session, auth.Provider)
 			Accuracy: w.accuracy,
 		}
 
-		client := api.NewSession(provider, location, &api.VoidFeed{}, w.crypto, w.debug)
+		client := api.NewSession(provider, location, &api.VoidFeed{}, nil, w.debug)
 
 		return action(ctx, client, provider)
 	}

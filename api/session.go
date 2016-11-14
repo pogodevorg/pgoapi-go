@@ -3,15 +3,16 @@ package api
 import (
 	"context"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
-
 	protos "github.com/pogodevorg/POGOProtos-go"
 	"github.com/pogodevorg/pgoapi-go/auth"
+	"gopkg.in/pokelibs/go-pokelib.v43"
 )
 
 const defaultURL = "https://pgorelease.nianticlabs.com/plfe/rpc"
@@ -20,7 +21,6 @@ const downloadSettingsHash = "05daf51635c82611d1aac95c0b051d3ec088a930"
 // Session is used to communicate with the Pokémon Go API
 type Session struct {
 	feed     Feed
-	crypto   Crypto
 	location *Location
 	rpc      *RPC
 	url      string
@@ -32,6 +32,8 @@ type Session struct {
 	started   time.Time
 	provider  auth.Provider
 	hash      []byte
+
+	deviceInfo *protos.Signature_DeviceInfo
 }
 
 func generateRequests() []*protos.Request {
@@ -43,7 +45,20 @@ func getTimestamp(t time.Time) uint64 {
 }
 
 // NewSession constructs a Pokémon Go RPC API client
-func NewSession(provider auth.Provider, location *Location, feed Feed, crypto Crypto, debug bool) *Session {
+func NewSession(provider auth.Provider, location *Location, feed Feed, deviceInfo *protos.Signature_DeviceInfo, debug bool) *Session {
+	if deviceInfo == nil{
+		// Default deviceInfo
+		deviceInfo = &protos.Signature_DeviceInfo{
+			DeviceId:             "<device_id>",
+			DeviceBrand:          "Apple",
+			DeviceModel:          "iPhone",
+			DeviceModelBoot:      "Iphone7,2",
+			HardwareManufacturer: "Apple",
+			HardwareModel:        "N66AP",
+			FirmwareBrand:        "iPhone OS",
+			FirmwareType:         "9.3.3",
+		}
+	}
 	return &Session{
 		location:  location,
 		rpc:       NewRPC(),
@@ -51,10 +66,10 @@ func NewSession(provider auth.Provider, location *Location, feed Feed, crypto Cr
 		debug:     debug,
 		debugger:  &jsonpb.Marshaler{Indent: "\t"},
 		feed:      feed,
-		crypto:    crypto,
 		started:   time.Now(),
 		hasTicket: false,
 		hash:      make([]byte, 32),
+		deviceInfo:deviceInfo,
 	}
 }
 
@@ -118,36 +133,34 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 		}
 	}
 
-	if s.crypto.Enabled() && s.hasTicket {
+	if s.hasTicket {
 		t := getTimestamp(time.Now())
-
+		ticket, _ := proto.Marshal(s.ticket)
 		requestHash := make([]uint64, len(requests))
 
 		for idx, request := range requests {
-			hash, err := generateRequestHash(s.ticket, request)
+			req, err := proto.Marshal(request)
 			if err != nil {
 				return nil, err
 			}
-			requestHash[idx] = hash
+			requestHash[idx] = pokelib.HashRequest(ticket, req)
 		}
 
-		locationHash1, err := generateLocation1(s.ticket, s.location)
-		if err != nil {
-			return nil, err
-		}
-
-		locationHash2, err := generateLocation2(s.location)
-		if err != nil {
-			return nil, err
-		}
+		locationHash1 := pokelib.HashLocation1(ticket, s.location.Lat, s.location.Lon, s.location.Alt)
+		locationHash2 := pokelib.HashLocation2(s.location.Lat, s.location.Lon, s.location.Alt)
 
 		signature := &protos.Signature{
-			RequestHash:         requestHash,
-			LocationHash1:       locationHash1,
-			LocationHash2:       locationHash2,
+			RequestHash:   requestHash,
+			LocationHash1: int32(locationHash1),
+			LocationHash2: int32(locationHash2),
+			ActivityStatus: &protos.Signature_ActivityStatus{
+				Stationary: true,
+			},
+			DeviceInfo: s.deviceInfo,
 			SessionHash:         s.hash,
 			Timestamp:           t,
 			TimestampSinceStart: (t - getTimestamp(s.started)),
+			Unknown25:           pokelib.Hash25(),
 		}
 
 		signatureProto, err := proto.Marshal(signature)
@@ -155,14 +168,8 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 			return nil, ErrFormatting
 		}
 
-		iv := s.crypto.CreateIV()
-		encryptedSignature, err := s.crypto.Encrypt(signatureProto, iv)
-		if err != nil {
-			return nil, ErrFormatting
-		}
-
 		requestMessage, err := proto.Marshal(&protos.SendEncryptedSignatureRequest{
-			EncryptedSignature: encryptedSignature,
+			EncryptedSignature: pokelib.Encrypt(signatureProto, uint32(signature.TimestampSinceStart)),
 		})
 		if err != nil {
 			return nil, ErrFormatting
@@ -265,6 +272,7 @@ func (s *Session) Announce(ctx context.Context) (mapObjects *protos.GetMapObject
 		{RequestType: protos.RequestType_CHECK_AWARDED_BADGES},
 		{protos.RequestType_DOWNLOAD_SETTINGS, settingsMessage},
 		{protos.RequestType_GET_MAP_OBJECTS, getMapObjectsMessage},
+		{RequestType: protos.RequestType_CHECK_CHALLENGE},
 	}
 
 	response, err := s.Call(ctx, requests)
@@ -273,6 +281,9 @@ func (s *Session) Announce(ctx context.Context) (mapObjects *protos.GetMapObject
 	}
 
 	mapObjects = &protos.GetMapObjectsResponse{}
+	if len(response.Returns) < 5 {
+		return nil, errors.New("Empty response")
+	}
 	err = proto.Unmarshal(response.Returns[5], mapObjects)
 	if err != nil {
 		return nil, &ErrResponse{err}
